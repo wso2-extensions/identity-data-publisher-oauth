@@ -1,0 +1,6 @@
+instructions.configure = \
+org.eclipse.equinox.p2.touchpoint.natives.mkdir(path:${installFolder}/../../deployment/);\
+org.eclipse.equinox.p2.touchpoint.natives.mkdir(path:${installFolder}/../../deployment/server/);\
+org.eclipse.equinox.p2.touchpoint.natives.mkdir(path:${installFolder}/../../deployment/server/eventpublishers/);\
+org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.wso2.carbon.identity.data.publisher.oauth.server_${feature.version}/OauthTokenIssueRefreshEventPublisher.xml,target:${installFolder}/../../deployment/server/eventpublishers/OauthTokenIssueRefreshEventPublisher.xml,overwrite:true);\
+org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.wso2.carbon.identity.data.publisher.oauth.server_${feature.version}/OauthTokenRevocationEventPublisher.xml,target:${installFolder}/../../deployment/server/eventpublishers/OauthTokenRevocationEventPublisher.xml,overwrite:true);\
