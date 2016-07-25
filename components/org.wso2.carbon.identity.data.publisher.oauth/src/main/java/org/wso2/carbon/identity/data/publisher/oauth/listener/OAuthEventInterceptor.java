@@ -20,6 +20,7 @@ package org.wso2.carbon.identity.data.publisher.oauth.listener;
 
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.data.publisher.oauth.OAuthDataPublisher;
 import org.wso2.carbon.identity.oauth.common.OAuth2ErrorCodes;
 import org.wso2.carbon.identity.oauth.event.OAuthEventListener;
@@ -40,7 +41,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class OAuthEventInterceptor implements OAuthEventListener {
+public class OAuthEventInterceptor extends AbstractIdentityHandler implements OAuthEventListener {
 
 
     private OAuthDataPublisher dataPublisher;

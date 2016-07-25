@@ -62,16 +62,16 @@ public class OAuthDataPublisher {
 
     public void publishTokenRevocationEvent(String clientId, boolean isSuccess,
                                             String errorMsg, String errorCode, String tokenId, String revokedBy) {
-
-        Object[] payloadData = new Object[6];
-        payloadData[0] = clientId;
-        payloadData[1] = isSuccess;
-        payloadData[2] = errorMsg;
-        payloadData[3] = errorCode;
-        payloadData[4] = tokenId;
-        payloadData[5] = revokedBy;
-        Event event = new Event(TOKEN_REVOKE_EVENT_STREAM_NAME, System.currentTimeMillis(), null, null, payloadData);
-        publisher.publish(event);
+//
+//        Object[] payloadData = new Object[6];
+//        payloadData[0] = clientId;
+//        payloadData[1] = isSuccess;
+//        payloadData[2] = errorMsg;
+//        payloadData[3] = errorCode;
+//        payloadData[4] = tokenId;
+//        payloadData[5] = revokedBy;
+//        Event event = new Event(TOKEN_REVOKE_EVENT_STREAM_NAME, System.currentTimeMillis(), null, null, payloadData);
+//        publisher.publish(event);
     }
 
 }

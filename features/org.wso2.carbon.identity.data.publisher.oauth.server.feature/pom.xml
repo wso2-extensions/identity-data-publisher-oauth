@@ -22,7 +22,7 @@
         <groupId>org.wso2.carbon.identity</groupId>
         <artifactId>identity-data-publisher-oauth</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>5.0.9-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -60,6 +60,7 @@
                                         <include>p2.inf</include>
                                         <include>OauthTokenIssueRefreshEventPublisher.xml</include>
                                         <include>OauthTokenRevocationEventPublisher.xml</include>
+                                        <include>org.wso2.carbon.identity.oauth.token.issuance_1.0.0.json</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -93,8 +94,8 @@
                             <importFeatures>
                                 <importFeatureDef>org.wso2.carbon.core:${carbon.kernel.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.identity.core:${identity.framework.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.identity.oauth.server.feature:${carbon.identity.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.event.publisher.aggregate.feature:${identity.framework.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.oauth.server:${identity.inbound.auth.oauth.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.event.publisher.aggregate:${carbon.analytics-common.version}</importFeatureDef>
                             </importFeatures>
                         </configuration>
                     </execution>
