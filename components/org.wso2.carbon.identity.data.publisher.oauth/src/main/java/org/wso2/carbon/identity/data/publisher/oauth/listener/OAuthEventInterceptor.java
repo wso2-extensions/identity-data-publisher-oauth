@@ -39,6 +39,7 @@ import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 public class OAuthEventInterceptor extends AbstractIdentityHandler implements OAuthEventListener {
@@ -80,7 +81,7 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
         String tokenId = tokenRespDTO.getTokenId();
         StringBuilder authzScopes = new StringBuilder();
         StringBuilder unauthzScopes = new StringBuilder();
-        List<String> requestedScopes = Arrays.asList(tokenReqDTO.getScope());
+        List<String> requestedScopes = new  LinkedList(Arrays.asList(tokenReqDTO.getScope()));
         List<String> grantedScopes;
         if (tokenRespDTO.getAuthorizedScopes() != null && StringUtils.isNotBlank(tokenRespDTO.getAuthorizedScopes())) {
             grantedScopes = Arrays.asList(tokenRespDTO.getAuthorizedScopes().split(" "));
