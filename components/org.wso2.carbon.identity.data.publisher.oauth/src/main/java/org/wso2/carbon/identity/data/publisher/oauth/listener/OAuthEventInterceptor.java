@@ -61,6 +61,9 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
     public void onPostTokenIssue(OAuth2AccessTokenReqDTO tokenReqDTO, OAuth2AccessTokenRespDTO tokenRespDTO,
                                  OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2Exception {
 
+        if (!isEnabled()) {
+            return;
+        }
         String username = null;
         String userstoreDomain = null;
         String tenantDomain = null;
@@ -108,6 +111,9 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
                                  OAuth2AuthorizeRespDTO respDTO)
             throws IdentityOAuth2Exception {
 
+        if (!isEnabled()) {
+            return;
+        }
         String username = null;
         String userstoreDomain = null;
         String tenantDomain = null;
@@ -166,6 +172,9 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
     public void onPostTokenRenewal(OAuth2AccessTokenReqDTO tokenReqDTO, OAuth2AccessTokenRespDTO tokenRespDTO,
                                    OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2Exception {
 
+        if (!isEnabled()) {
+            return;
+        }
         //This will be treated same as a token issuance in refresh token grant
         onPostTokenIssue(tokenReqDTO, tokenRespDTO, tokReqMsgCtx);
     }
@@ -181,7 +190,9 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
                                               OAuthRevocationResponseDTO revokeResponseDTO, AccessTokenDO accessTokenDO,
                                               RefreshTokenValidationDataDO refreshTokenDO)
             throws IdentityOAuth2Exception {
-
+        if (!isEnabled()) {
+            return;
+        }
         String clientId = null;
         boolean isFailed = false;
         String errorMsg = null;
@@ -215,7 +226,9 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
             org.wso2.carbon.identity.oauth.dto.OAuthRevocationRequestDTO revokeRequestDTO,
             org.wso2.carbon.identity.oauth.dto.OAuthRevocationResponseDTO revokeRespDTO,
             AccessTokenDO accessTokenDO) throws IdentityOAuth2Exception {
-
+        if (!isEnabled()) {
+            return;
+        }
         String clientId = null;
         boolean isFailed = false;
         String errorMsg = null;
