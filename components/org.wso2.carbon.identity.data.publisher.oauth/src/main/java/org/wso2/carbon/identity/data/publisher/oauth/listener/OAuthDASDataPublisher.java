@@ -19,11 +19,14 @@
 package org.wso2.carbon.identity.data.publisher.oauth.listener;
 
 import org.apache.commons.lang.StringUtils;
+import org.wso2.carbon.databridge.commons.Event;
+import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
-import org.wso2.carbon.identity.data.publisher.oauth.OAuthDataPublisher;
+import org.wso2.carbon.identity.data.publisher.oauth.OauthDataPublisherConstants;
+import org.wso2.carbon.identity.data.publisher.oauth.internal.OAuthDataPublisherServiceHolder;
 import org.wso2.carbon.identity.oauth.common.OAuth2ErrorCodes;
-import org.wso2.carbon.identity.oauth.event.OAuthEventListener;
+import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.authz.OAuthAuthzReqMessageContext;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
@@ -42,14 +45,15 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class OAuthEventInterceptor extends AbstractIdentityHandler implements OAuthEventListener {
+/**
+ * Oauth Event Interceptor implemented for publishing oauth data to DAS
+ */
+public class OAuthDASDataPublisher extends AbstractIdentityHandler implements OAuthEventInterceptor {
 
+    private EventStreamService publisher;
 
-    private OAuthDataPublisher dataPublisher;
-
-    public OAuthEventInterceptor() {
-
-        dataPublisher = new OAuthDataPublisher();
+    public OAuthDASDataPublisher() {
+        publisher = OAuthDataPublisherServiceHolder.getInstance().getPublisherService();
     }
 
     @Override
@@ -81,7 +85,7 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
         String tokenId = tokenRespDTO.getTokenId();
         StringBuilder authzScopes = new StringBuilder();
         StringBuilder unauthzScopes = new StringBuilder();
-        List<String> requestedScopes = new  LinkedList(Arrays.asList(tokenReqDTO.getScope()));
+        List<String> requestedScopes = new LinkedList(Arrays.asList(tokenReqDTO.getScope()));
         List<String> grantedScopes;
         if (tokenRespDTO.getAuthorizedScopes() != null && StringUtils.isNotBlank(tokenRespDTO.getAuthorizedScopes())) {
             grantedScopes = Arrays.asList(tokenRespDTO.getAuthorizedScopes().split(" "));
@@ -96,7 +100,7 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
             unauthzScopes.append(scope).append(" ");
         }
 
-        dataPublisher.publishTokenIssueEvent(username, tenantDomain, userstoreDomain, clientId, grantType, tokenId,
+        this.publishTokenIssueEvent(username, tenantDomain, userstoreDomain, clientId, grantType, tokenId,
                 authzScopes.toString(), unauthzScopes.toString(), !tokenRespDTO.isError(), tokenRespDTO.getErrorCode(),
                 tokenRespDTO.getErrorMsg(), tokReqMsgCtx.getValidityPeriod(),
                 tokReqMsgCtx.getRefreshTokenvalidityPeriod(), tokReqMsgCtx.getAccessTokenIssuedTime());
@@ -157,7 +161,7 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
         for (String scope : requestedScopes) {
             unauthzScopes.append(scope).append(" ");
         }
-        dataPublisher.publishTokenIssueEvent(username, tenantDomain, userstoreDomain, clientId, grantType, tokenId,
+        this.publishTokenIssueEvent(username, tenantDomain, userstoreDomain, clientId, grantType, tokenId,
                 authzScopes.toString(), unauthzScopes.toString(), isSuccess, errorCode, errorMsg, tokenValidity,
                 refreshTokenValidity, issuedTime);
 
@@ -210,7 +214,7 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
         if (accessTokenDO != null) {
             tokenId = accessTokenDO.getTokenId();
         }
-        dataPublisher.publishTokenRevocationEvent(clientId, !isFailed, errorMsg, errorCode, tokenId, "CLIENT");
+        this.publishTokenRevocationEvent(clientId, !isFailed, errorMsg, errorCode, tokenId, "CLIENT");
 
 
     }
@@ -247,7 +251,7 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
             tokenId = accessTokenDO.getTokenId();
         }
 
-        dataPublisher.publishTokenRevocationEvent(clientId, !isFailed, errorMsg, errorCode, tokenId, "RESOURCE_OWNER");
+        this.publishTokenRevocationEvent(clientId, !isFailed, errorMsg, errorCode, tokenId, "RESOURCE_OWNER");
 
     }
 
@@ -262,4 +266,51 @@ public class OAuthEventInterceptor extends AbstractIdentityHandler implements OA
             throws IdentityOAuth2Exception {
 
     }
+
+    public String getName() {
+        return OauthDataPublisherConstants.OAUTH_DAS_DATA_PUBLISHER;
+    }
+
+    public void publishTokenIssueEvent(String user, String tenantDomain, String userstoreDomain, String clientId,
+                                       String grantType, String tokenId, String authzScopes, String unAuthzScopes,
+                                       boolean isSuccess, String errorCode, String errorMsg,
+                                       long accessTokenValidityMillis, long refreshTokenValidityMillis,
+                                       long issuedTime) {
+
+        Object[] payloadData = new Object[14];
+        payloadData[0] = user;
+        payloadData[1] = tenantDomain;
+        payloadData[2] = userstoreDomain;
+        payloadData[3] = clientId;
+        payloadData[4] = grantType;
+        payloadData[5] = tokenId;
+        payloadData[6] = authzScopes;
+        payloadData[7] = unAuthzScopes;
+        payloadData[8] = isSuccess;
+        payloadData[9] = errorCode;
+        payloadData[10] = errorMsg;
+        payloadData[11] = accessTokenValidityMillis;
+        payloadData[12] = refreshTokenValidityMillis;
+        payloadData[13] = issuedTime;
+        Event event = new Event(OauthDataPublisherConstants.TOKEN_ISSUE_EVENT_STREAM_NAME, System.currentTimeMillis()
+                , null, null, payloadData);
+        publisher.publish(event);
+    }
+
+
+    public void publishTokenRevocationEvent(String clientId, boolean isSuccess,
+                                            String errorMsg, String errorCode, String tokenId, String revokedBy) {
+//
+//        Object[] payloadData = new Object[6];
+//        payloadData[0] = clientId;
+//        payloadData[1] = isSuccess;
+//        payloadData[2] = errorMsg;
+//        payloadData[3] = errorCode;
+//        payloadData[4] = tokenId;
+//        payloadData[5] = revokedBy;
+//        Event event = new Event(OauthDataPublisherConstants.TOKEN_REVOKE_EVENT_STREAM_NAME, System
+// .currentTimeMillis(), null, null, payloadData);
+//        publisher.publish(event);
+    }
+
 }

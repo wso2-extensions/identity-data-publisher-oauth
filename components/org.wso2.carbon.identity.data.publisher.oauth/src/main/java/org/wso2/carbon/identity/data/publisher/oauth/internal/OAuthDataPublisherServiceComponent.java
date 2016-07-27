@@ -23,8 +23,13 @@ import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.event.stream.core.EventStreamService;
-import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthEventInterceptor;
-import org.wso2.carbon.identity.oauth.event.OAuthEventListener;
+import org.wso2.carbon.identity.core.handler.HandlerComparator;
+import org.wso2.carbon.identity.data.publisher.oauth.OauthInterceptorHandlerProxy;
+import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthDASDataPublisher;
+import org.wso2.carbon.identity.oauth.common.OAuthConstants;
+import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
+
+import java.util.Collections;
 
 /**
  * @scr.component name="org.wso2.carbon.identity.data.publisher.oauth" immediate="true"
@@ -32,6 +37,11 @@ import org.wso2.carbon.identity.oauth.event.OAuthEventListener;
  * interface="org.wso2.carbon.event.stream.core.EventStreamService"
  * cardinality="1..1" policy="dynamic"  bind="setEventStreamService"
  * unbind="unsetEventStreamService"
+ * @scr.reference name="org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor"
+ * interface="org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor"
+ * cardinality="0..n" policy="dynamic"
+ * bind="setAuthEventInterceptor"
+ * unbind="unsetOauthEventInterceptor"
  */
 public class OAuthDataPublisherServiceComponent {
 
@@ -42,21 +52,64 @@ public class OAuthDataPublisherServiceComponent {
         BundleContext bundleContext = context.getBundleContext();
 
         try {
-            bundleContext.registerService(OAuthEventListener.class, new OAuthEventInterceptor(), null);
+            bundleContext.registerService(OAuthEventInterceptor.class, new OAuthDASDataPublisher(), null);
+            bundleContext.registerService(OAuthEventInterceptor.class, new OauthInterceptorHandlerProxy(), null);
         } catch (Throwable e) {
-            log.error("Error occurred while activating WorkflowImplServiceComponent bundle, ", e);
+            log.error("Error occurred while activating Oauth data publisher bundle, ", e);
         }
-
     }
 
     protected void setEventStreamService(EventStreamService publisherService) {
-
+        if(log.isDebugEnabled()) {
+            log.debug("Registering EventStreamService");
+        }
         OAuthDataPublisherServiceHolder.getInstance().setPublisherService(publisherService);
     }
 
     protected void unsetEventStreamService(EventStreamService publisherService) {
-
+        if(log.isDebugEnabled()) {
+            log.debug("Un-registering EventStreamService");
+        }
         OAuthDataPublisherServiceHolder.getInstance().setPublisherService(null);
+    }
+
+    protected void setAuthEventInterceptor(OAuthEventInterceptor oAuthEventInterceptor) {
+
+        if (oAuthEventInterceptor == null) {
+            log.warn("Null OAuthEventListener received, hence not registering");
+            return;
+        }
+
+        if (OAuthConstants.OAUTH_INTERCEPTOR_PROXY.equalsIgnoreCase(oAuthEventInterceptor.getName())) {
+            log.debug("Oauth intercepter Proxy is getting registered, Hence skipping");
+            return;
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Setting OAuthEventListener :" + oAuthEventInterceptor.getClass().getName());
+        }
+        OAuthDataPublisherServiceHolder.getInstance().addOauthEventListener(oAuthEventInterceptor);
+        Collections.sort(OAuthDataPublisherServiceHolder.getInstance().getOAuthEventInterceptors(),
+                new HandlerComparator());
+        Collections.reverse(OAuthDataPublisherServiceHolder.getInstance().getOAuthEventInterceptors());
+    }
+
+    protected void unsetOauthEventInterceptor(OAuthEventInterceptor oAuthEventInterceptor) {
+
+        if (oAuthEventInterceptor == null) {
+            log.warn("Null Oauth event interceptor received, hence not un-registering");
+            return;
+        }
+
+        if (OAuthConstants.OAUTH_INTERCEPTOR_PROXY.equalsIgnoreCase(oAuthEventInterceptor.getName())) {
+            log.debug("Proxy is un-registering, Hence skipping");
+            return;
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Un-setting oAuthEventInterceptor:" + oAuthEventInterceptor.getClass().getName());
+        }
+        OAuthDataPublisherServiceHolder.getInstance().removeOauthEventListener(oAuthEventInterceptor);
     }
 
 }
