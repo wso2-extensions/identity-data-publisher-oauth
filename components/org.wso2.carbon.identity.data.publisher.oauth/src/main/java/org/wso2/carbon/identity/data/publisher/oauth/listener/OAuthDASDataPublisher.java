@@ -23,6 +23,8 @@ import org.wso2.carbon.databridge.commons.Event;
 import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
+import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.data.publisher.oauth.OauthDataPublisherConstants;
 import org.wso2.carbon.identity.data.publisher.oauth.internal.OAuthDataPublisherServiceHolder;
 import org.wso2.carbon.identity.oauth.common.OAuth2ErrorCodes;
@@ -311,6 +313,11 @@ public class OAuthDASDataPublisher extends AbstractIdentityHandler implements OA
 //        Event event = new Event(OauthDataPublisherConstants.TOKEN_REVOKE_EVENT_STREAM_NAME, System
 // .currentTimeMillis(), null, null, payloadData);
 //        publisher.publish(event);
+    }
+
+    public boolean isEnabled() {
+        IdentityEventListenerConfig identityEventListenerConfig = IdentityUtil.readEventListenerProperty(AbstractIdentityHandler.class.getName(), this.getClass().getName());
+        return identityEventListenerConfig == null?false:Boolean.parseBoolean(identityEventListenerConfig.getEnable());
     }
 
 }
