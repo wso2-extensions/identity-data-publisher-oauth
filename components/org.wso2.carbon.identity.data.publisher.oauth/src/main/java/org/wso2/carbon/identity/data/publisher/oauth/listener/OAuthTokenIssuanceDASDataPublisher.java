@@ -22,24 +22,17 @@ import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.databridge.commons.Event;
 import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
-import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
-import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
-import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.data.publisher.oauth.OauthDataPublisherConstants;
 import org.wso2.carbon.identity.data.publisher.oauth.internal.OAuthDataPublisherServiceHolder;
 import org.wso2.carbon.identity.oauth.common.OAuth2ErrorCodes;
+import org.wso2.carbon.identity.oauth.event.AbstractOAuthEventInterceptor;
 import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.authz.OAuthAuthzReqMessageContext;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeRespDTO;
-import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
-import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationResponseDTO;
-import org.wso2.carbon.identity.oauth2.dto.OAuthRevocationRequestDTO;
-import org.wso2.carbon.identity.oauth2.dto.OAuthRevocationResponseDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
-import org.wso2.carbon.identity.oauth2.model.RefreshTokenValidationDataDO;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
 
 import java.util.Arrays;
@@ -50,19 +43,14 @@ import java.util.List;
 /**
  * Oauth Event Interceptor implemented for publishing oauth data to DAS
  */
-public class OAuthDASDataPublisher extends AbstractIdentityHandler implements OAuthEventInterceptor {
+public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterceptor implements OAuthEventInterceptor {
 
     private EventStreamService publisher;
 
-    public OAuthDASDataPublisher() {
+    public OAuthTokenIssuanceDASDataPublisher() {
         publisher = OAuthDataPublisherServiceHolder.getInstance().getPublisherService();
     }
 
-    @Override
-    public void onPreTokenIssue(OAuth2AccessTokenReqDTO tokenReqDTO, OAuthTokenReqMessageContext tokReqMsgCtx)
-            throws IdentityOAuth2Exception {
-        //Not needed
-    }
 
     @Override
     public void onPostTokenIssue(OAuth2AccessTokenReqDTO tokenReqDTO, OAuth2AccessTokenRespDTO tokenRespDTO,
@@ -106,11 +94,6 @@ public class OAuthDASDataPublisher extends AbstractIdentityHandler implements OA
                 authzScopes.toString(), unauthzScopes.toString(), !tokenRespDTO.isError(), tokenRespDTO.getErrorCode(),
                 tokenRespDTO.getErrorMsg(), tokReqMsgCtx.getValidityPeriod(),
                 tokReqMsgCtx.getRefreshTokenvalidityPeriod(), tokReqMsgCtx.getAccessTokenIssuedTime());
-    }
-
-    @Override
-    public void onPreTokenIssue(OAuthAuthzReqMessageContext oauthAuthzMsgCtx) throws IdentityOAuth2Exception {
-        //Not needed
     }
 
     @Override
@@ -170,12 +153,6 @@ public class OAuthDASDataPublisher extends AbstractIdentityHandler implements OA
     }
 
     @Override
-    public void onPreTokenRenewal(OAuth2AccessTokenReqDTO tokenReqDTO, OAuthTokenReqMessageContext tokReqMsgCtx)
-            throws IdentityOAuth2Exception {
-        //Not needed
-    }
-
-    @Override
     public void onPostTokenRenewal(OAuth2AccessTokenReqDTO tokenReqDTO, OAuth2AccessTokenRespDTO tokenRespDTO,
                                    OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2Exception {
 
@@ -186,56 +163,12 @@ public class OAuthDASDataPublisher extends AbstractIdentityHandler implements OA
         onPostTokenIssue(tokenReqDTO, tokenRespDTO, tokReqMsgCtx);
     }
 
-    @Override
-    public void onPreTokenRevocationByClient(OAuthRevocationRequestDTO revokeRequestDTO)
-            throws IdentityOAuth2Exception {
-
-    }
-
-    @Override
-    public void onPostTokenRevocationByClient(OAuthRevocationRequestDTO revokeRequestDTO,
-                                              OAuthRevocationResponseDTO revokeResponseDTO, AccessTokenDO accessTokenDO,
-                                              RefreshTokenValidationDataDO refreshTokenDO)
-            throws IdentityOAuth2Exception {
-        if (!isEnabled()) {
-            return;
-        }
-        String clientId = null;
-        boolean isFailed = false;
-        String errorMsg = null;
-        String errorCode = null;
-        String tokenId = null;
-        if (revokeRequestDTO != null) {
-            clientId = revokeRequestDTO.getConsumerKey();
-        }
-        if (revokeResponseDTO != null) {
-            isFailed = revokeResponseDTO.isError();
-            errorMsg = revokeResponseDTO.getErrorMsg();
-            errorCode = revokeResponseDTO.getErrorCode();
-        }
-        if (accessTokenDO != null) {
-            tokenId = accessTokenDO.getTokenId();
-        }
-        this.publishTokenRevocationEvent(clientId, !isFailed, errorMsg, errorCode, tokenId, "CLIENT");
-
-
-    }
-
-    @Override
-    public void onPreTokenRevocationByResourceOwner(
-            org.wso2.carbon.identity.oauth.dto.OAuthRevocationRequestDTO revokeRequestDTO)
-            throws IdentityOAuth2Exception {
-
-    }
 
     @Override
     public void onPostTokenRevocationByResourceOwner(
             org.wso2.carbon.identity.oauth.dto.OAuthRevocationRequestDTO revokeRequestDTO,
             org.wso2.carbon.identity.oauth.dto.OAuthRevocationResponseDTO revokeRespDTO,
             AccessTokenDO accessTokenDO) throws IdentityOAuth2Exception {
-        if (!isEnabled()) {
-            return;
-        }
         String clientId = null;
         boolean isFailed = false;
         String errorMsg = null;
@@ -255,22 +188,6 @@ public class OAuthDASDataPublisher extends AbstractIdentityHandler implements OA
 
         this.publishTokenRevocationEvent(clientId, !isFailed, errorMsg, errorCode, tokenId, "RESOURCE_OWNER");
 
-    }
-
-    @Override
-    public void onPreTokenValidation(OAuth2TokenValidationRequestDTO validationReqDTO) throws IdentityOAuth2Exception {
-
-    }
-
-    @Override
-    public void onPostTokenValidation(OAuth2TokenValidationRequestDTO validationReqDTO,
-                                      OAuth2TokenValidationResponseDTO validationResponseDTO)
-            throws IdentityOAuth2Exception {
-
-    }
-
-    public String getName() {
-        return OauthDataPublisherConstants.OAUTH_DAS_DATA_PUBLISHER;
     }
 
     public void publishTokenIssueEvent(String user, String tenantDomain, String userstoreDomain, String clientId,
@@ -299,25 +216,8 @@ public class OAuthDASDataPublisher extends AbstractIdentityHandler implements OA
         publisher.publish(event);
     }
 
-
-    public void publishTokenRevocationEvent(String clientId, boolean isSuccess,
-                                            String errorMsg, String errorCode, String tokenId, String revokedBy) {
-//
-//        Object[] payloadData = new Object[6];
-//        payloadData[0] = clientId;
-//        payloadData[1] = isSuccess;
-//        payloadData[2] = errorMsg;
-//        payloadData[3] = errorCode;
-//        payloadData[4] = tokenId;
-//        payloadData[5] = revokedBy;
-//        Event event = new Event(OauthDataPublisherConstants.TOKEN_REVOKE_EVENT_STREAM_NAME, System
-// .currentTimeMillis(), null, null, payloadData);
-//        publisher.publish(event);
-    }
-
-    public boolean isEnabled() {
-        IdentityEventListenerConfig identityEventListenerConfig = IdentityUtil.readEventListenerProperty(AbstractIdentityHandler.class.getName(), this.getClass().getName());
-        return identityEventListenerConfig == null?false:Boolean.parseBoolean(identityEventListenerConfig.getEnable());
+    public String getName() {
+        return OauthDataPublisherConstants.OAUTH_TOKEN_ISSUANCE_DAS_DATA_PUBLISHER;
     }
 
 }

@@ -29,6 +29,7 @@ import org.wso2.carbon.identity.oauth2.authz.OAuthAuthzReqMessageContext;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeRespDTO;
+import org.wso2.carbon.identity.oauth2.dto.OAuth2IntrospectionResponseDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationResponseDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
@@ -177,6 +178,18 @@ public class OauthInterceptorHandlerProxy extends AbstractIdentityHandler implem
             if (interceptor.isEnabled()) {
                 interceptor.onPostTokenValidation(oAuth2TokenValidationRequestDTO,
                         oAuth2TokenValidationResponseDTO);
+            }
+        }
+    }
+
+    @Override
+    public void onPostTokenValidation(OAuth2TokenValidationRequestDTO oAuth2TokenValidationRequestDTO,
+                                      OAuth2IntrospectionResponseDTO oAuth2IntrospectionResponseDTO) throws
+            IdentityOAuth2Exception {
+        for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
+            if (interceptor.isEnabled()) {
+                interceptor.onPostTokenValidation(oAuth2TokenValidationRequestDTO,
+                        oAuth2IntrospectionResponseDTO);
             }
         }
     }

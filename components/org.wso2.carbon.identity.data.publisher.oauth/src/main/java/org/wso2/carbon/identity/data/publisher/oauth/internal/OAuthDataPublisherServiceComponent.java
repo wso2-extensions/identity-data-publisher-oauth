@@ -25,7 +25,7 @@ import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.core.handler.HandlerComparator;
 import org.wso2.carbon.identity.data.publisher.oauth.OauthInterceptorHandlerProxy;
-import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthDASDataPublisher;
+import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthTokenIssuanceDASDataPublisher;
 import org.wso2.carbon.identity.oauth.common.OAuthConstants;
 import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
 
@@ -52,7 +52,7 @@ public class OAuthDataPublisherServiceComponent {
         BundleContext bundleContext = context.getBundleContext();
 
         try {
-            bundleContext.registerService(OAuthEventInterceptor.class, new OAuthDASDataPublisher(), null);
+            bundleContext.registerService(OAuthEventInterceptor.class, new OAuthTokenIssuanceDASDataPublisher(), null);
             bundleContext.registerService(OAuthEventInterceptor.class, new OauthInterceptorHandlerProxy(), null);
         } catch (Throwable e) {
             log.error("Error occurred while activating Oauth data publisher bundle, ", e);

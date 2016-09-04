@@ -22,7 +22,7 @@ public class OauthDataPublisherConstants {
     private OauthDataPublisherConstants() {
     }
 
-    public static final String OAUTH_DAS_DATA_PUBLISHER = "OauthDASDataPublisher";
+    public static final String OAUTH_TOKEN_ISSUANCE_DAS_DATA_PUBLISHER = "OauthTokenIssuanceDASDataPublisher";
     public static final String TOKEN_ISSUE_EVENT_STREAM_NAME = "org.wso2.carbon.identity.oauth.token.issuance:1.0.0";
     public static final String TOKEN_REVOKE_EVENT_STREAM_NAME = "org.wso2.carbon.identity.oauth.token.revocation:1.0.0";
 }
