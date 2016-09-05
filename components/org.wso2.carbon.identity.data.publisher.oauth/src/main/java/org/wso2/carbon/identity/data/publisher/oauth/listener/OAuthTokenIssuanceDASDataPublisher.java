@@ -24,6 +24,7 @@ import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.data.publisher.oauth.OauthDataPublisherConstants;
 import org.wso2.carbon.identity.data.publisher.oauth.internal.OAuthDataPublisherServiceHolder;
+import org.wso2.carbon.identity.data.publisher.oauth.model.TokenData;
 import org.wso2.carbon.identity.oauth.common.OAuth2ErrorCodes;
 import org.wso2.carbon.identity.oauth.event.AbstractOAuthEventInterceptor;
 import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
@@ -56,22 +57,16 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
     public void onPostTokenIssue(OAuth2AccessTokenReqDTO tokenReqDTO, OAuth2AccessTokenRespDTO tokenRespDTO,
                                  OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2Exception {
 
-        if (!isEnabled()) {
-            return;
-        }
-        String username = null;
-        String userstoreDomain = null;
-        String tenantDomain = null;
-        String grantType;
-        String clientId;
+        TokenData tokenData = new TokenData();
+
         AuthenticatedUser authorizedUser = tokReqMsgCtx.getAuthorizedUser();
         if (authorizedUser != null) {
-            username = authorizedUser.getUserName();
-            userstoreDomain = authorizedUser.getUserStoreDomain();
-            tenantDomain = authorizedUser.getTenantDomain();
+            tokenData.setUser(authorizedUser.getUserName());
+            tokenData.setUserStoreDomain(authorizedUser.getUserStoreDomain());
+            tokenData.setTenantDomain(authorizedUser.getTenantDomain());
         }
-        grantType = tokenReqDTO.getGrantType();
-        clientId = tokenReqDTO.getClientId();
+        tokenData.setGrantType(tokenReqDTO.getGrantType());
+        tokenData.setClientId(tokenReqDTO.getClientId());
         String tokenId = tokenRespDTO.getTokenId();
         StringBuilder authzScopes = new StringBuilder();
         StringBuilder unauthzScopes = new StringBuilder();
@@ -89,11 +84,9 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         for (String scope : requestedScopes) {
             unauthzScopes.append(scope).append(" ");
         }
-
-        this.publishTokenIssueEvent(username, tenantDomain, userstoreDomain, clientId, grantType, tokenId,
-                authzScopes.toString(), unauthzScopes.toString(), !tokenRespDTO.isError(), tokenRespDTO.getErrorCode(),
-                tokenRespDTO.getErrorMsg(), tokReqMsgCtx.getValidityPeriod(),
-                tokReqMsgCtx.getRefreshTokenvalidityPeriod(), tokReqMsgCtx.getAccessTokenIssuedTime());
+        tokenData.setAuthzScopes(authzScopes.toString());
+        tokenData.setUnAuthzScopes(unauthzScopes.toString());
+        this.publishTokenIssueEvent(tokenData);
     }
 
     @Override
@@ -101,41 +94,28 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
                                  OAuth2AuthorizeRespDTO respDTO)
             throws IdentityOAuth2Exception {
 
-        if (!isEnabled()) {
-            return;
-        }
         String username = null;
-        String userstoreDomain = null;
-        String tenantDomain = null;
-        String grantType = null;
-        String clientId = null;
-        String tokenId = null;
-        boolean isSuccess = true;
         StringBuilder authzScopes = new StringBuilder();
         StringBuilder unauthzScopes = new StringBuilder();
         AuthenticatedUser user = oauthAuthzMsgCtx.getAuthorizationReqDTO().getUser();
-        String errorCode = null;
-        String errorMsg = null;
-        long tokenValidity = 0;
-        long refreshTokenValidity = 0;
-        long issuedTime = 0;
+        TokenData tokenData = new TokenData();
         if (user == null || tokenDO == null) {
-            isSuccess = false;
-            errorCode = OAuth2ErrorCodes.SERVER_ERROR;
-            errorMsg = "Error occurred when issuing token";
+            tokenData.setIsSuccess(false);
+            tokenData.setErrorCode(OAuth2ErrorCodes.SERVER_ERROR);
+            tokenData.setErrorMsg("Error occurred when issuing token");
         }
         if (user != null) {
-            username = user.getUserName();
-            userstoreDomain = user.getUserStoreDomain();
-            tenantDomain = user.getTenantDomain();
+            tokenData.setUser(user.getUserName());
+            tokenData.setUserStoreDomain(user.getUserStoreDomain());
+            tokenData.setTenantDomain(user.getTenantDomain());
         }
         if (tokenDO != null) {
-            tokenId = tokenDO.getTokenId();
-            grantType = tokenDO.getGrantType();
-            clientId = tokenDO.getConsumerKey();
-            tokenValidity = tokenDO.getValidityPeriodInMillis();
-            refreshTokenValidity = tokenDO.getRefreshTokenValidityPeriodInMillis();
-            issuedTime = tokenDO.getIssuedTime().getTime();
+            tokenData.setTokenId(tokenDO.getTokenId());
+            tokenData.setGrantType(tokenDO.getGrantType());
+            tokenData.setClientId(tokenDO.getConsumerKey());
+            tokenData.setAccessTokenValidityMillis(tokenDO.getValidityPeriodInMillis());
+            tokenData.setRefreshTokenValidityMillis(tokenDO.getRefreshTokenValidityPeriodInMillis());
+            tokenData.setIssuedTime(tokenDO.getIssuedTime().getTime());
         }
         List<String> requestedScopes = Arrays.asList(oauthAuthzMsgCtx.getAuthorizationReqDTO().getScopes());
         List<String> grantedScopes = Arrays.asList(respDTO.getScope());
@@ -146,9 +126,7 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         for (String scope : requestedScopes) {
             unauthzScopes.append(scope).append(" ");
         }
-        this.publishTokenIssueEvent(username, tenantDomain, userstoreDomain, clientId, grantType, tokenId,
-                authzScopes.toString(), unauthzScopes.toString(), isSuccess, errorCode, errorMsg, tokenValidity,
-                refreshTokenValidity, issuedTime);
+        this.publishTokenIssueEvent(tokenData);
 
     }
 
@@ -156,61 +134,28 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
     public void onPostTokenRenewal(OAuth2AccessTokenReqDTO tokenReqDTO, OAuth2AccessTokenRespDTO tokenRespDTO,
                                    OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2Exception {
 
-        if (!isEnabled()) {
-            return;
-        }
         //This will be treated same as a token issuance in refresh token grant
         onPostTokenIssue(tokenReqDTO, tokenRespDTO, tokReqMsgCtx);
     }
 
 
-    @Override
-    public void onPostTokenRevocationByResourceOwner(
-            org.wso2.carbon.identity.oauth.dto.OAuthRevocationRequestDTO revokeRequestDTO,
-            org.wso2.carbon.identity.oauth.dto.OAuthRevocationResponseDTO revokeRespDTO,
-            AccessTokenDO accessTokenDO) throws IdentityOAuth2Exception {
-        String clientId = null;
-        boolean isFailed = false;
-        String errorMsg = null;
-        String errorCode = null;
-        String tokenId = null;
-        if (revokeRequestDTO != null) {
-            clientId = revokeRequestDTO.getConsumerKey();
-        }
-        if (revokeRespDTO != null) {
-            isFailed = revokeRespDTO.isError();
-            errorMsg = revokeRespDTO.getErrorMsg();
-            errorCode = revokeRespDTO.getErrorCode();
-        }
-        if (accessTokenDO != null) {
-            tokenId = accessTokenDO.getTokenId();
-        }
-
-        this.publishTokenRevocationEvent(clientId, !isFailed, errorMsg, errorCode, tokenId, "RESOURCE_OWNER");
-
-    }
-
-    public void publishTokenIssueEvent(String user, String tenantDomain, String userstoreDomain, String clientId,
-                                       String grantType, String tokenId, String authzScopes, String unAuthzScopes,
-                                       boolean isSuccess, String errorCode, String errorMsg,
-                                       long accessTokenValidityMillis, long refreshTokenValidityMillis,
-                                       long issuedTime) {
+    public void publishTokenIssueEvent(TokenData tokenData) {
 
         Object[] payloadData = new Object[14];
-        payloadData[0] = user;
-        payloadData[1] = tenantDomain;
-        payloadData[2] = userstoreDomain;
-        payloadData[3] = clientId;
-        payloadData[4] = grantType;
-        payloadData[5] = tokenId;
-        payloadData[6] = authzScopes;
-        payloadData[7] = unAuthzScopes;
-        payloadData[8] = isSuccess;
-        payloadData[9] = errorCode;
-        payloadData[10] = errorMsg;
-        payloadData[11] = accessTokenValidityMillis;
-        payloadData[12] = refreshTokenValidityMillis;
-        payloadData[13] = issuedTime;
+        payloadData[0] = tokenData.getUser();
+        payloadData[1] = tokenData.getTenantDomain();
+        payloadData[2] = tokenData.getUserStoreDomain();
+        payloadData[3] = tokenData.getClientId();
+        payloadData[4] = tokenData.getGrantType();
+        payloadData[5] = tokenData.getTokenId();
+        payloadData[6] = tokenData.getAuthzScopes();
+        payloadData[7] = tokenData.getUnAuthzScopes();
+        payloadData[8] = tokenData.isSuccess();
+        payloadData[9] = tokenData.getErrorCode();
+        payloadData[10] = tokenData.getErrorMsg();
+        payloadData[11] = tokenData.getAccessTokenValidityMillis();
+        payloadData[12] = tokenData.getRefreshTokenValidityMillis();
+        payloadData[13] = tokenData.getIssuedTime();
         Event event = new Event(OauthDataPublisherConstants.TOKEN_ISSUE_EVENT_STREAM_NAME, System.currentTimeMillis()
                 , null, null, payloadData);
         publisher.publish(event);
