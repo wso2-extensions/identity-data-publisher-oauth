@@ -17,9 +17,9 @@
   ~ under the License.
   -->
 
-<eventPublisher name="OauthTokenRevocationEventPublisher" statistics="disable" trace="disable"
+<eventPublisher name="IsAnalytics-Publisher-wso2event-OauthTokenValidation" statistics="disable" trace="disable"
                 xmlns="http://wso2.org/carbon/eventpublisher">
-    <from streamName="org.wso2.carbon.identity.oauth.token.revocation" version="1.0.0"/>
+    <from streamName="org.wso2.is.analytics.stream.OauthTokenValidation" version="1.0.0"/>
     <mapping customMapping="disable" type="wso2event"/>
     <to eventAdapterType="wso2event">
         <property name="username">admin</property>

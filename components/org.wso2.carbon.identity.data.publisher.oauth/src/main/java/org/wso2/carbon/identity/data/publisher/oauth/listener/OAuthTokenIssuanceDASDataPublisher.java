@@ -22,7 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.databridge.commons.Event;
 import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
-import org.wso2.carbon.identity.data.publisher.oauth.OauthDataPublisherConstants;
+import org.wso2.carbon.identity.data.publisher.oauth.OAuthDataPublisherConstants;
 import org.wso2.carbon.identity.data.publisher.oauth.internal.OAuthDataPublisherServiceHolder;
 import org.wso2.carbon.identity.data.publisher.oauth.model.TokenData;
 import org.wso2.carbon.identity.oauth.common.OAuth2ErrorCodes;
@@ -65,9 +65,14 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
             tokenData.setUserStoreDomain(authorizedUser.getUserStoreDomain());
             tokenData.setTenantDomain(authorizedUser.getTenantDomain());
         }
+
+        if(tokReqMsgCtx != null) {
+            tokenData.setIssuedTime(tokReqMsgCtx.getAccessTokenIssuedTime());
+            tokenData.setRefreshTokenValidityMillis(tokReqMsgCtx.getRefreshTokenvalidityPeriod());
+        }
         tokenData.setGrantType(tokenReqDTO.getGrantType());
         tokenData.setClientId(tokenReqDTO.getClientId());
-        String tokenId = tokenRespDTO.getTokenId();
+        tokenData.setTokenId(tokenRespDTO.getTokenId());
         StringBuilder authzScopes = new StringBuilder();
         StringBuilder unauthzScopes = new StringBuilder();
         List<String> requestedScopes = new LinkedList(Arrays.asList(tokenReqDTO.getScope()));
@@ -86,6 +91,7 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         }
         tokenData.setAuthzScopes(authzScopes.toString());
         tokenData.setUnAuthzScopes(unauthzScopes.toString());
+        tokenData.setAccessTokenValidityMillis(tokenRespDTO.getExpiresInMillis());
         this.publishTokenIssueEvent(tokenData);
     }
 
@@ -156,13 +162,13 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         payloadData[11] = tokenData.getAccessTokenValidityMillis();
         payloadData[12] = tokenData.getRefreshTokenValidityMillis();
         payloadData[13] = tokenData.getIssuedTime();
-        Event event = new Event(OauthDataPublisherConstants.TOKEN_ISSUE_EVENT_STREAM_NAME, System.currentTimeMillis()
+        Event event = new Event(OAuthDataPublisherConstants.TOKEN_ISSUE_EVENT_STREAM_NAME, System.currentTimeMillis()
                 , null, null, payloadData);
         publisher.publish(event);
     }
 
     public String getName() {
-        return OauthDataPublisherConstants.OAUTH_TOKEN_ISSUANCE_DAS_DATA_PUBLISHER;
+        return OAuthDataPublisherConstants.OAUTH_TOKEN_ISSUANCE_DAS_DATA_PUBLISHER;
     }
 
 }

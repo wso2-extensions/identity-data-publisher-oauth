@@ -38,7 +38,7 @@ import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
 
 import java.util.List;
 
-public class OauthInterceptorHandlerProxy extends AbstractIdentityHandler implements OAuthEventInterceptor {
+public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implements OAuthEventInterceptor {
 
     private List<OAuthEventInterceptor> oAuthEventInterceptors = OAuthDataPublisherServiceHolder.getInstance()
             .getOAuthEventInterceptors();
