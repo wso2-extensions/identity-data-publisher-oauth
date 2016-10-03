@@ -64,6 +64,7 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         String[] publishingTenantDomains = null;
 
         if (authorizedUser != null) {
+            tokenData.setIsSuccess(true);
             tokenData.setUser(authorizedUser.getUserName());
             tokenData.setUserStoreDomain(authorizedUser.getUserStoreDomain());
             tokenData.setTenantDomain(authorizedUser.getTenantDomain());
@@ -134,6 +135,7 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
                 publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(null, user.getTenantDomain());
             }
 
+            tokenData.setIsSuccess(true);
         }
         if (tokenDO != null) {
             tokenData.setTokenId(tokenDO.getTokenId());

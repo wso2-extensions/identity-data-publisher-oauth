@@ -107,7 +107,8 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
                                            params) throws IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
-                interceptor.onPreTokenRenewal(oAuth2AccessTokenReqDTO, oAuthTokenReqMessageContext, params);
+                interceptor.onPostTokenRenewal(oAuth2AccessTokenReqDTO, oAuth2AccessTokenRespDTO,
+                        oAuthTokenReqMessageContext, params);
             }
         }
 
