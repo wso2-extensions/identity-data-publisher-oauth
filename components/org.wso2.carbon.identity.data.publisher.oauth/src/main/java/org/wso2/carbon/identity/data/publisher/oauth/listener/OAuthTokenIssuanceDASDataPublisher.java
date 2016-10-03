@@ -19,10 +19,13 @@
 package org.wso2.carbon.identity.data.publisher.oauth.listener;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.databridge.commons.Event;
-import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.data.publisher.oauth.OAuthDataPublisherConstants;
+import org.wso2.carbon.identity.data.publisher.oauth.OAuthDataPublisherUtils;
 import org.wso2.carbon.identity.data.publisher.oauth.internal.OAuthDataPublisherServiceHolder;
 import org.wso2.carbon.identity.data.publisher.oauth.model.TokenData;
 import org.wso2.carbon.identity.oauth.common.OAuth2ErrorCodes;
@@ -35,38 +38,40 @@ import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeRespDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Oauth Event Interceptor implemented for publishing oauth data to DAS
  */
 public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterceptor implements OAuthEventInterceptor {
 
-    private EventStreamService publisher;
-
-    public OAuthTokenIssuanceDASDataPublisher() {
-        publisher = OAuthDataPublisherServiceHolder.getInstance().getPublisherService();
-    }
-
+    public static final Log LOG = LogFactory.getLog(OAuthTokenIssuanceDASDataPublisher.class);
 
     @Override
     public void onPostTokenIssue(OAuth2AccessTokenReqDTO tokenReqDTO, OAuth2AccessTokenRespDTO tokenRespDTO,
-                                 OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2Exception {
+                                 OAuthTokenReqMessageContext tokReqMsgCtx, Map<String, Object> params) throws
+            IdentityOAuth2Exception {
 
         TokenData tokenData = new TokenData();
 
         AuthenticatedUser authorizedUser = tokReqMsgCtx.getAuthorizedUser();
+        String[] publishingTenantDomains = null;
+
         if (authorizedUser != null) {
             tokenData.setUser(authorizedUser.getUserName());
             tokenData.setUserStoreDomain(authorizedUser.getUserStoreDomain());
             tokenData.setTenantDomain(authorizedUser.getTenantDomain());
+            publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(tokenReqDTO.getTenantDomain(),
+                    authorizedUser.getTenantDomain());
         }
 
-        if(tokReqMsgCtx != null) {
+        if (tokReqMsgCtx != null) {
             tokenData.setIssuedTime(tokReqMsgCtx.getAccessTokenIssuedTime());
             tokenData.setRefreshTokenValidityMillis(tokReqMsgCtx.getRefreshTokenvalidityPeriod());
         }
@@ -89,18 +94,25 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         for (String scope : requestedScopes) {
             unauthzScopes.append(scope).append(" ");
         }
+
+        // In a case if the authenticated user is not preset, publish event to sp tenant domain
+        if (publishingTenantDomains == null) {
+            publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(tokenReqDTO.getTenantDomain(), null);
+        }
         tokenData.setAuthzScopes(authzScopes.toString());
         tokenData.setUnAuthzScopes(unauthzScopes.toString());
         tokenData.setAccessTokenValidityMillis(tokenRespDTO.getExpiresInMillis());
+
+        tokenData.addParameter(OAuthDataPublisherConstants.TENANT_ID, publishingTenantDomains);
         this.publishTokenIssueEvent(tokenData);
     }
 
     @Override
     public void onPostTokenIssue(OAuthAuthzReqMessageContext oauthAuthzMsgCtx, AccessTokenDO tokenDO,
-                                 OAuth2AuthorizeRespDTO respDTO)
+                                 OAuth2AuthorizeRespDTO respDTO, Map<String, Object> params)
             throws IdentityOAuth2Exception {
 
-        String username = null;
+        String[] publishingTenantDomains = null;
         StringBuilder authzScopes = new StringBuilder();
         StringBuilder unauthzScopes = new StringBuilder();
         AuthenticatedUser user = oauthAuthzMsgCtx.getAuthorizationReqDTO().getUser();
@@ -114,6 +126,14 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
             tokenData.setUser(user.getUserName());
             tokenData.setUserStoreDomain(user.getUserStoreDomain());
             tokenData.setTenantDomain(user.getTenantDomain());
+
+            if (oauthAuthzMsgCtx.getAuthorizationReqDTO() != null) {
+                publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(oauthAuthzMsgCtx
+                        .getAuthorizationReqDTO().getTenantDomain(), user.getTenantDomain());
+            } else {
+                publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(null, user.getTenantDomain());
+            }
+
         }
         if (tokenDO != null) {
             tokenData.setTokenId(tokenDO.getTokenId());
@@ -132,16 +152,22 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         for (String scope : requestedScopes) {
             unauthzScopes.append(scope).append(" ");
         }
+        // In a case if the authenticated user is not preset, publish event to sp tenant domain
+        if (publishingTenantDomains == null && oauthAuthzMsgCtx.getAuthorizationReqDTO() != null) {
+            publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(oauthAuthzMsgCtx
+                    .getAuthorizationReqDTO().getTenantDomain(), null);
+        }
+        tokenData.addParameter(OAuthDataPublisherConstants.TENANT_ID, publishingTenantDomains);
         this.publishTokenIssueEvent(tokenData);
-
     }
 
     @Override
     public void onPostTokenRenewal(OAuth2AccessTokenReqDTO tokenReqDTO, OAuth2AccessTokenRespDTO tokenRespDTO,
-                                   OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2Exception {
+                                   OAuthTokenReqMessageContext tokReqMsgCtx, Map<String, Object> params) throws
+            IdentityOAuth2Exception {
 
         //This will be treated same as a token issuance in refresh token grant
-        onPostTokenIssue(tokenReqDTO, tokenRespDTO, tokReqMsgCtx);
+        onPostTokenIssue(tokenReqDTO, tokenRespDTO, tokReqMsgCtx, params);
     }
 
 
@@ -162,9 +188,24 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         payloadData[11] = tokenData.getAccessTokenValidityMillis();
         payloadData[12] = tokenData.getRefreshTokenValidityMillis();
         payloadData[13] = tokenData.getIssuedTime();
-        Event event = new Event(OAuthDataPublisherConstants.TOKEN_ISSUE_EVENT_STREAM_NAME, System.currentTimeMillis()
-                , null, null, payloadData);
-        publisher.publish(event);
+
+        String[] publishingDomains = (String[]) tokenData.getParameter(OAuthDataPublisherConstants.TENANT_ID);
+        if (publishingDomains != null && publishingDomains.length > 0) {
+            try {
+                FrameworkUtils.startTenantFlow(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                for (String publishingDomain : publishingDomains) {
+                    Object[] metadataArray = OAuthDataPublisherUtils.getMetaDataArray(publishingDomain);
+                    Event event = new Event(OAuthDataPublisherConstants.TOKEN_ISSUE_EVENT_STREAM_NAME, System
+                            .currentTimeMillis(), metadataArray, null, payloadData);
+                    OAuthDataPublisherServiceHolder.getInstance().getPublisherService().publish(event);
+                    if (LOG.isDebugEnabled() && event != null) {
+                        LOG.debug("Sending out event : " + event.toString());
+                    }
+                }
+            } finally {
+                FrameworkUtils.endTenantFlow();
+            }
+        }
     }
 
     public String getName() {

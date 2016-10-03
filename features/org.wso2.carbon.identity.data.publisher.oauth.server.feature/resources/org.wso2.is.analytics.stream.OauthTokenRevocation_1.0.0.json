@@ -23,6 +23,14 @@
       "type": "STRING"
     },
     {
+      "name": "tenantDomain",
+      "type": "STRING"
+    },
+    {
+      "name": "userstoreDomain",
+      "type": "STRING"
+    },
+    {
       "name": "grantType",
       "type": "STRING"
     },
@@ -31,11 +39,7 @@
       "type": "STRING"
     },
     {
-      "name": "isActive",
-      "type": "BOOL"
-    },
-    {
-      "name": "accessTokenValidityMillis",
+      "name": "revokedTime",
       "type": "LONG"
     },
     {

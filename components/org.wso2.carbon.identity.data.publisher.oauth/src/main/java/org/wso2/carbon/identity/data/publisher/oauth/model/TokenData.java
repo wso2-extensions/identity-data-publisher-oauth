@@ -41,6 +41,7 @@ public class TokenData<T1 extends Object, T2 extends Object> {
     private long refreshTokenValidityMillis;
     private long issuedTime;
     private boolean isActive;
+    private long revokedTime;
     protected Map<T1, T2> parameters = new HashMap<>();
 
     public String getUser() {
@@ -161,6 +162,14 @@ public class TokenData<T1 extends Object, T2 extends Object> {
 
     public void setIsActive(boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public long getRevokedTime() {
+        return revokedTime;
+    }
+
+    public void setRevokedTime(long revokedTime) {
+        this.revokedTime = revokedTime;
     }
 
     public void addParameter(T1 key, T2 value) {

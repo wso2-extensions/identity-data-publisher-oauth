@@ -36,7 +36,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>
             <artifactId>org.wso2.carbon.identity.oauth</artifactId>
         </dependency>
         <dependency>
@@ -89,8 +89,11 @@
                             version="${identity.inbound.auth.oauth.imp.pkg.version.range}",
                             org.wso2.carbon.identity.oauth2.*;
                             version="${identity.inbound.auth.oauth.imp.pkg.version.range}",
-                            org.wso2.carbon.identity.application.authentication.framework.model;
+                            org.wso2.carbon.identity.application.authentication.framework.*;
                             version="${identity.framework.version}",
+                            org.wso2.carbon.identity.base.*;
+                            version="${identity.framework.version}",
+                            org.wso2.carbon.utils.multitenancy;version="${carbon.kernel.imp.pkg.version.range}",
                             org.wso2.carbon.identity.core.*;
                             version="${identity.framework.version}",
                             org.wso2.carbon.event.stream.core; version="${carbon.analytics-common.version}",

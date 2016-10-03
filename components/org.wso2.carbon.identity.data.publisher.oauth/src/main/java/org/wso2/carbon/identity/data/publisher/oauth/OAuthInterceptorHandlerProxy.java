@@ -37,6 +37,7 @@ import org.wso2.carbon.identity.oauth2.model.RefreshTokenValidationDataDO;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
 
 import java.util.List;
+import java.util.Map;
 
 public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implements OAuthEventInterceptor {
 
@@ -45,10 +46,10 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
 
     @Override
     public void onPreTokenIssue(OAuth2AccessTokenReqDTO oAuth2AccessTokenReqDTO, OAuthTokenReqMessageContext
-            oAuthTokenReqMessageContext) throws IdentityOAuth2Exception {
+            oAuthTokenReqMessageContext, Map<String, Object> params) throws IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
-                interceptor.onPreTokenIssue(oAuth2AccessTokenReqDTO, oAuthTokenReqMessageContext);
+                interceptor.onPreTokenIssue(oAuth2AccessTokenReqDTO, oAuthTokenReqMessageContext, params);
             }
         }
 
@@ -56,23 +57,23 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
 
     @Override
     public void onPostTokenIssue(OAuth2AccessTokenReqDTO oAuth2AccessTokenReqDTO, OAuth2AccessTokenRespDTO
-            oAuth2AccessTokenRespDTO, OAuthTokenReqMessageContext oAuthTokenReqMessageContext) throws
-            IdentityOAuth2Exception {
+            oAuth2AccessTokenRespDTO, OAuthTokenReqMessageContext oAuthTokenReqMessageContext, Map<String, Object>
+                                         params) throws IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
                 interceptor.onPostTokenIssue(oAuth2AccessTokenReqDTO, oAuth2AccessTokenRespDTO,
-                        oAuthTokenReqMessageContext);
+                        oAuthTokenReqMessageContext, params);
             }
         }
 
     }
 
     @Override
-    public void onPreTokenIssue(OAuthAuthzReqMessageContext oAuthAuthzReqMessageContext) throws
-            IdentityOAuth2Exception {
+    public void onPreTokenIssue(OAuthAuthzReqMessageContext oAuthAuthzReqMessageContext, Map<String, Object> params)
+            throws IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
-                interceptor.onPreTokenIssue(oAuthAuthzReqMessageContext);
+                interceptor.onPreTokenIssue(oAuthAuthzReqMessageContext, params);
             }
         }
 
@@ -80,20 +81,21 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
 
     @Override
     public void onPostTokenIssue(OAuthAuthzReqMessageContext oAuthAuthzReqMessageContext, AccessTokenDO
-            accessTokenDO, OAuth2AuthorizeRespDTO oAuth2AuthorizeRespDTO) throws IdentityOAuth2Exception {
+            accessTokenDO, OAuth2AuthorizeRespDTO oAuth2AuthorizeRespDTO, Map<String, Object> params) throws
+            IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
-                interceptor.onPostTokenIssue(oAuthAuthzReqMessageContext, accessTokenDO, oAuth2AuthorizeRespDTO);
+                interceptor.onPostTokenIssue(oAuthAuthzReqMessageContext, accessTokenDO, oAuth2AuthorizeRespDTO, params);
             }
         }
     }
 
     @Override
     public void onPreTokenRenewal(OAuth2AccessTokenReqDTO oAuth2AccessTokenReqDTO, OAuthTokenReqMessageContext
-            oAuthTokenReqMessageContext) throws IdentityOAuth2Exception {
+            oAuthTokenReqMessageContext, Map<String, Object> params) throws IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
-                interceptor.onPreTokenRenewal(oAuth2AccessTokenReqDTO, oAuthTokenReqMessageContext);
+                interceptor.onPreTokenRenewal(oAuth2AccessTokenReqDTO, oAuthTokenReqMessageContext, params);
             }
         }
 
@@ -101,11 +103,11 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
 
     @Override
     public void onPostTokenRenewal(OAuth2AccessTokenReqDTO oAuth2AccessTokenReqDTO, OAuth2AccessTokenRespDTO
-            oAuth2AccessTokenRespDTO, OAuthTokenReqMessageContext oAuthTokenReqMessageContext) throws
-            IdentityOAuth2Exception {
+            oAuth2AccessTokenRespDTO, OAuthTokenReqMessageContext oAuthTokenReqMessageContext, Map<String, Object>
+                                           params) throws IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
-                interceptor.onPreTokenRenewal(oAuth2AccessTokenReqDTO, oAuthTokenReqMessageContext);
+                interceptor.onPreTokenRenewal(oAuth2AccessTokenReqDTO, oAuthTokenReqMessageContext, params);
             }
         }
 
@@ -113,10 +115,11 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
 
     @Override
     public void onPreTokenRevocationByClient(org.wso2.carbon.identity.oauth2.dto.OAuthRevocationRequestDTO
-                                                     oAuthRevocationRequestDTO) throws IdentityOAuth2Exception {
+                                                     oAuthRevocationRequestDTO, Map<String, Object> params) throws
+            IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
-                interceptor.onPreTokenRevocationByClient(oAuthRevocationRequestDTO);
+                interceptor.onPreTokenRevocationByClient(oAuthRevocationRequestDTO, params);
             }
         }
 
@@ -125,24 +128,25 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
     @Override
     public void onPostTokenRevocationByClient(org.wso2.carbon.identity.oauth2.dto.OAuthRevocationRequestDTO
                                                       oAuthRevocationRequestDTO,
-                                              org.wso2.carbon.identity.oauth2.dto.OAuthRevocationResponseDTO oAuthRevocationResponseDTO,
-                                              AccessTokenDO accessTokenDO, RefreshTokenValidationDataDO
-                                                      refreshTokenValidationDataDO) throws IdentityOAuth2Exception {
+                                              org.wso2.carbon.identity.oauth2.dto.OAuthRevocationResponseDTO
+                                                      oAuthRevocationResponseDTO, AccessTokenDO accessTokenDO,
+                                              RefreshTokenValidationDataDO refreshTokenValidationDataDO, Map<String,
+            Object> params) throws IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
                 interceptor.onPostTokenRevocationByClient(oAuthRevocationRequestDTO, oAuthRevocationResponseDTO,
-                        accessTokenDO, refreshTokenValidationDataDO);
+                        accessTokenDO, refreshTokenValidationDataDO, params);
             }
         }
     }
 
     @Override
-    public void onPreTokenRevocationByResourceOwner(OAuthRevocationRequestDTO oAuthRevocationRequestDTO) throws
-            IdentityOAuth2Exception {
+    public void onPreTokenRevocationByResourceOwner(OAuthRevocationRequestDTO oAuthRevocationRequestDTO, Map<String,
+            Object> params) throws IdentityOAuth2Exception {
 
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
-                interceptor.onPreTokenRevocationByResourceOwner(oAuthRevocationRequestDTO);
+                interceptor.onPreTokenRevocationByResourceOwner(oAuthRevocationRequestDTO, params);
             }
         }
     }
@@ -150,46 +154,47 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
     @Override
     public void onPostTokenRevocationByResourceOwner(OAuthRevocationRequestDTO oAuthRevocationRequestDTO,
                                                      OAuthRevocationResponseDTO oAuthRevocationResponseDTO,
-                                                     AccessTokenDO accessTokenDO) throws IdentityOAuth2Exception {
+                                                     AccessTokenDO accessTokenDO, Map<String, Object> params) throws
+            IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
                 interceptor.onPostTokenRevocationByResourceOwner(oAuthRevocationRequestDTO,
-                        oAuthRevocationResponseDTO, accessTokenDO);
+                        oAuthRevocationResponseDTO, accessTokenDO, params);
             }
         }
     }
 
     @Override
-    public void onPreTokenValidation(OAuth2TokenValidationRequestDTO oAuth2TokenValidationRequestDTO) throws
-            IdentityOAuth2Exception {
+    public void onPreTokenValidation(OAuth2TokenValidationRequestDTO oAuth2TokenValidationRequestDTO, Map<String,
+            Object> params) throws IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
-                interceptor.onPreTokenValidation(oAuth2TokenValidationRequestDTO);
+                interceptor.onPreTokenValidation(oAuth2TokenValidationRequestDTO, params);
             }
         }
 
-    }
-
-    @Override
-    public void onPostTokenValidation(OAuth2TokenValidationRequestDTO oAuth2TokenValidationRequestDTO,
-                                      OAuth2TokenValidationResponseDTO oAuth2TokenValidationResponseDTO) throws
-            IdentityOAuth2Exception {
-        for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
-            if (interceptor.isEnabled()) {
-                interceptor.onPostTokenValidation(oAuth2TokenValidationRequestDTO,
-                        oAuth2TokenValidationResponseDTO);
-            }
-        }
     }
 
     @Override
     public void onPostTokenValidation(OAuth2TokenValidationRequestDTO oAuth2TokenValidationRequestDTO,
-                                      OAuth2IntrospectionResponseDTO oAuth2IntrospectionResponseDTO) throws
-            IdentityOAuth2Exception {
+                                      OAuth2TokenValidationResponseDTO oAuth2TokenValidationResponseDTO, Map<String,
+            Object> params) throws IdentityOAuth2Exception {
         for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
             if (interceptor.isEnabled()) {
                 interceptor.onPostTokenValidation(oAuth2TokenValidationRequestDTO,
-                        oAuth2IntrospectionResponseDTO);
+                        oAuth2TokenValidationResponseDTO, params);
+            }
+        }
+    }
+
+    @Override
+    public void onPostTokenValidation(OAuth2TokenValidationRequestDTO oAuth2TokenValidationRequestDTO,
+                                      OAuth2IntrospectionResponseDTO oAuth2IntrospectionResponseDTO, Map<String,
+            Object> params) throws IdentityOAuth2Exception {
+        for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
+            if (interceptor.isEnabled()) {
+                interceptor.onPostTokenValidation(oAuth2TokenValidationRequestDTO,
+                        oAuth2IntrospectionResponseDTO, params);
             }
         }
     }

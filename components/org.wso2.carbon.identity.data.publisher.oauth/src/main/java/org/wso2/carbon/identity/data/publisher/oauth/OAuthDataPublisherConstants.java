@@ -28,4 +28,7 @@ public class OAuthDataPublisherConstants {
     public static final String TOKEN_ISSUE_EVENT_STREAM_NAME = "org.wso2.is.analytics.stream.OauthTokenIssuance:1.0.0";
     public static final String TOKEN_VALIDATION_EVENT_STREAM_NAME = "org.wso2.is.analytics.stream.OauthTokenValidation:1.0.0";
     public static final String TOKEN_REVOKE_EVENT_STREAM_NAME = "org.wso2.is.analytics.stream.OauthTokenRevocation:1.0.0";
+
+    public static final String NOT_AVAILABLE = "NOT_AVAILABLE";
+    public static final String TENANT_ID = "TENANT_ID";
 }
