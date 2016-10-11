@@ -38,6 +38,7 @@ import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeRespDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
+import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.util.Arrays;
@@ -79,7 +80,6 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         tokenData.setGrantType(tokenReqDTO.getGrantType());
         tokenData.setClientId(tokenReqDTO.getClientId());
         tokenData.setTokenId(tokenRespDTO.getTokenId());
-        StringBuilder authzScopes = new StringBuilder();
         StringBuilder unauthzScopes = new StringBuilder();
         List<String> requestedScopes = new LinkedList(Arrays.asList(tokenReqDTO.getScope()));
         List<String> grantedScopes;
@@ -87,9 +87,6 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
             grantedScopes = Arrays.asList(tokenRespDTO.getAuthorizedScopes().split(" "));
         } else {
             grantedScopes = Collections.emptyList();
-        }
-        for (String scope : grantedScopes) {
-            authzScopes.append(scope).append(" ");
         }
         requestedScopes.removeAll(grantedScopes);
         for (String scope : requestedScopes) {
@@ -100,7 +97,7 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         if (publishingTenantDomains == null) {
             publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(tokenReqDTO.getTenantDomain(), null);
         }
-        tokenData.setAuthzScopes(authzScopes.toString());
+        tokenData.setAuthzScopes(tokenRespDTO.getAuthorizedScopes());
         tokenData.setUnAuthzScopes(unauthzScopes.toString());
         tokenData.setAccessTokenValidityMillis(tokenRespDTO.getExpiresInMillis());
 
@@ -114,7 +111,6 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
             throws IdentityOAuth2Exception {
 
         String[] publishingTenantDomains = null;
-        StringBuilder authzScopes = new StringBuilder();
         StringBuilder unauthzScopes = new StringBuilder();
         AuthenticatedUser user = oauthAuthzMsgCtx.getAuthorizationReqDTO().getUser();
         TokenData tokenData = new TokenData();
@@ -147,18 +143,18 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         }
         List<String> requestedScopes = Arrays.asList(oauthAuthzMsgCtx.getAuthorizationReqDTO().getScopes());
         List<String> grantedScopes = Arrays.asList(respDTO.getScope());
-        for (String scope : grantedScopes) {
-            authzScopes.append(scope).append(" ");
-        }
         requestedScopes.removeAll(grantedScopes);
         for (String scope : requestedScopes) {
             unauthzScopes.append(scope).append(" ");
         }
+        tokenData.setAuthzScopes(OAuth2Util.buildScopeString(respDTO.getScope()));
+        tokenData.setUnAuthzScopes(unauthzScopes.toString());
         // In a case if the authenticated user is not preset, publish event to sp tenant domain
         if (publishingTenantDomains == null && oauthAuthzMsgCtx.getAuthorizationReqDTO() != null) {
             publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(oauthAuthzMsgCtx
                     .getAuthorizationReqDTO().getTenantDomain(), null);
         }
+
         tokenData.addParameter(OAuthDataPublisherConstants.TENANT_ID, publishingTenantDomains);
         this.publishTokenIssueEvent(tokenData);
     }

@@ -45,6 +45,19 @@
     {
       "name": "issuedTime",
       "type": "LONG"
+    },
+    {
+      "name": "isSuccess",
+      "type": "BOOL"
+    },
+    {
+      "name": "errorMessage",
+      "type": "STRING"
+    },
+    {
+      "name": "errorCode",
+      "type": "STRING"
     }
+
   ]
 }
