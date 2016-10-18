@@ -187,30 +187,23 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         payloadData[12] = tokenData.getRefreshTokenValidityMillis();
         payloadData[13] = tokenData.getIssuedTime();
 
-
-        Event event = new Event(OAuthDataPublisherConstants.TOKEN_ISSUE_EVENT_STREAM_NAME, System.currentTimeMillis()
-                , null, null, payloadData);
-        OAuthDataPublisherServiceHolder.getInstance().getPublisherService().publish(event);
-
-        //TODO: following section should be uncommented and tenant wise data publishing should be enabled.
-
-//        String[] publishingDomains = (String[]) tokenData.getParameter(OAuthDataPublisherConstants.TENANT_ID);
-//        if (publishingDomains != null && publishingDomains.length > 0) {
-//            try {
-//                FrameworkUtils.startTenantFlow(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
-//                for (String publishingDomain : publishingDomains) {
-//                    Object[] metadataArray = OAuthDataPublisherUtils.getMetaDataArray(publishingDomain);
-//                    Event event = new Event(OAuthDataPublisherConstants.TOKEN_ISSUE_EVENT_STREAM_NAME, System
-//                            .currentTimeMillis(), metadataArray, null, payloadData);
-//                    OAuthDataPublisherServiceHolder.getInstance().getPublisherService().publish(event);
-//                    if (LOG.isDebugEnabled() && event != null) {
-//                        LOG.debug("Sending out event : " + event.toString());
-//                    }
-//                }
-//            } finally {
-//                FrameworkUtils.endTenantFlow();
-//            }
-//        }
+        String[] publishingDomains = (String[]) tokenData.getParameter(OAuthDataPublisherConstants.TENANT_ID);
+        if (publishingDomains != null && publishingDomains.length > 0) {
+            try {
+                FrameworkUtils.startTenantFlow(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                for (String publishingDomain : publishingDomains) {
+                    Object[] metadataArray = OAuthDataPublisherUtils.getMetaDataArray(publishingDomain);
+                    Event event = new Event(OAuthDataPublisherConstants.TOKEN_ISSUE_EVENT_STREAM_NAME, System
+                            .currentTimeMillis(), metadataArray, null, payloadData);
+                    OAuthDataPublisherServiceHolder.getInstance().getPublisherService().publish(event);
+                    if (LOG.isDebugEnabled() && event != null) {
+                        LOG.debug("Sending out event : " + event.toString());
+                    }
+                }
+            } finally {
+                FrameworkUtils.endTenantFlow();
+            }
+        }
     }
 
     public String getName() {
