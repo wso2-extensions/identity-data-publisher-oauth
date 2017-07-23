@@ -61,6 +61,9 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
 
         TokenData tokenData = new TokenData();
 
+        if (tokReqMsgCtx == null) {
+            throw new IdentityOAuth2Exception("Empty token request message context");
+        }
         AuthenticatedUser authorizedUser = tokReqMsgCtx.getAuthorizedUser();
         String[] publishingTenantDomains = null;
 
@@ -73,10 +76,9 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
                     authorizedUser.getTenantDomain());
         }
 
-        if (tokReqMsgCtx != null) {
-            tokenData.setIssuedTime(tokReqMsgCtx.getAccessTokenIssuedTime());
-            tokenData.setRefreshTokenValidityMillis(tokReqMsgCtx.getRefreshTokenvalidityPeriod());
-        }
+        tokenData.setIssuedTime(tokReqMsgCtx.getAccessTokenIssuedTime());
+        tokenData.setRefreshTokenValidityMillis(tokReqMsgCtx.getRefreshTokenvalidityPeriod());
+
         tokenData.setGrantType(tokenReqDTO.getGrantType());
         tokenData.setClientId(tokenReqDTO.getClientId());
         tokenData.setTokenId(tokenRespDTO.getTokenId());
