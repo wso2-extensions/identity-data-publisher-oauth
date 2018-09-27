@@ -21,6 +21,9 @@ package org.wso2.carbon.identity.data.publisher.oauth.listener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
+import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
+import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.oauth.dao.OAuthAppDO;
 import org.wso2.carbon.identity.oauth.event.AbstractOAuthEventInterceptor;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
@@ -91,5 +94,17 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
      */
     private boolean isPasswordGrant(OAuth2AccessTokenReqDTO tokenReqDTO) {
         return PASSWORD_GRANT.equals(tokenReqDTO.getGrantType());
+    }
+
+    /**
+     * Enable audit logger by default
+     * @return true if config is not found or if enabled from config.
+     */
+    public boolean isEnabled() {
+
+        IdentityEventListenerConfig identityEventListenerConfig = IdentityUtil.
+                readEventListenerProperty(AbstractIdentityHandler.class.getName(), this.getClass().getName());
+        return identityEventListenerConfig == null ? true :
+                Boolean.parseBoolean(identityEventListenerConfig.getEnable());
     }
 }
