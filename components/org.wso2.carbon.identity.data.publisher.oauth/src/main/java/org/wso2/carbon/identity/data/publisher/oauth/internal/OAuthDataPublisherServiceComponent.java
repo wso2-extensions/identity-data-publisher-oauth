@@ -26,6 +26,7 @@ import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.core.handler.HandlerComparator;
 import org.wso2.carbon.identity.data.publisher.oauth.OAuthInterceptorHandlerProxy;
 import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthTokenIssuanceDASDataPublisher;
+import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthTokenIssuanceLogPublisher;
 import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthTokenRevocationDASPublisher;
 import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthTokenValidationDASDataPublisher;
 import org.wso2.carbon.identity.oauth.common.OAuthConstants;
@@ -55,6 +56,7 @@ public class OAuthDataPublisherServiceComponent {
 
         try {
             bundleContext.registerService(OAuthEventInterceptor.class, new OAuthTokenIssuanceDASDataPublisher(), null);
+            bundleContext.registerService(OAuthEventInterceptor.class, new OAuthTokenIssuanceLogPublisher(), null);
             bundleContext.registerService(OAuthEventInterceptor.class, new OAuthTokenValidationDASDataPublisher(), null);
             bundleContext.registerService(OAuthEventInterceptor.class, new OAuthTokenRevocationDASPublisher(), null);
             bundleContext.registerService(OAuthEventInterceptor.class, new OAuthInterceptorHandlerProxy(), null);

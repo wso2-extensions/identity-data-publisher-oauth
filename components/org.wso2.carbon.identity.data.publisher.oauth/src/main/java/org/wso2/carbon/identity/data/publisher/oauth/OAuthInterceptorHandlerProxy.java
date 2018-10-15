@@ -201,6 +201,16 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
     }
 
     @Override
+    public void onTokenIssueException(Throwable throwable, Map<String, Object> params) throws IdentityOAuth2Exception {
+
+        for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
+            if (interceptor.isEnabled()) {
+                interceptor.onTokenIssueException(throwable, params);
+            }
+        }
+    }
+
+    @Override
     public String getName() {
         return OAuthConstants.OAUTH_INTERCEPTOR_PROXY;
     }
