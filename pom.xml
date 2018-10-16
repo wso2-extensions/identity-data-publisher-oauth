@@ -146,6 +146,16 @@
                 <artifactId>org.wso2.carbon.event.stream.core</artifactId>
                 <version>${carbon.analytics-common.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${com.google.code.gson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.user.core</artifactId>
+                <version>${carbon.kernel.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -228,13 +238,14 @@
 
     <properties>
         <carbon.kernel.version>4.4.6</carbon.kernel.version>
-        <identity.inbound.auth.oauth.version>6.0.0</identity.inbound.auth.oauth.version>
+        <identity.inbound.auth.oauth.version>6.0.61</identity.inbound.auth.oauth.version>
         <carbon.kernel.package.import.version.range>[4.4.0, 5.0.0)</carbon.kernel.package.import.version.range>
         <identity.framework.version>5.7.0</identity.framework.version>
         <carbon.analytics-common.version>5.1.7</carbon.analytics-common.version>
         <carbon.p2.plugin.version>1.5.3</carbon.p2.plugin.version>
         <maven.buildnumber.plugin.version>1.4</maven.buildnumber.plugin.version>
         <identity.data.publisher.oauth.exp.version>${project.version}</identity.data.publisher.oauth.exp.version>
+        <com.google.code.gson.version>2.6.2</com.google.code.gson.version>
 
         <carbon.kernel.imp.pkg.version.range>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version.range>
         <identity.framework.imp.pkg.version.range>[5.7.0,6.0.0)</identity.framework.imp.pkg.version.range>
@@ -244,6 +255,7 @@
         <osgi.service.component.imp.pkg.version.range>[1.2.0, 2.0.0)</osgi.service.component.imp.pkg.version.range>
         <commons-logging.osgi.version.range>[1.2,2.0)</commons-logging.osgi.version.range>
         <commons-lang.wso2.osgi.version.range>[2.6.0,3.0.0)</commons-lang.wso2.osgi.version.range>
+        <com.google.code.gson.osgi.version.range>[2.6.2,3.0.0)</com.google.code.gson.osgi.version.range>
     </properties>
 
     <modules>
