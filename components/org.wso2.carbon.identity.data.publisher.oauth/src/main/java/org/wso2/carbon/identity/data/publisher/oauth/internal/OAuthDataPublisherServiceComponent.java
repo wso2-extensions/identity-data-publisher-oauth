@@ -24,6 +24,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.core.handler.HandlerComparator;
+import org.wso2.carbon.identity.core.util.IdentityCoreInitializedEvent;
 import org.wso2.carbon.identity.data.publisher.oauth.OAuthInterceptorHandlerProxy;
 import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthTokenIssuanceDASDataPublisher;
 import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthTokenIssuanceLogPublisher;
@@ -45,6 +46,11 @@ import java.util.Collections;
  * cardinality="0..n" policy="dynamic"
  * bind="setAuthEventInterceptor"
  * unbind="unsetOauthEventInterceptor"
+ * @scr.reference name="org.wso2.carbon.identity.core.util.IdentityCoreInitializedEvent"
+ * interface="org.wso2.carbon.identity.core.util.IdentityCoreInitializedEvent"
+ * cardinality="1..1" policy="dynamic"
+ * bind="setIdentityCoreInitializedEvent"
+ * unbind="unsetIdentityCoreInitializedEvent"
  */
 public class OAuthDataPublisherServiceComponent {
 
@@ -118,4 +124,13 @@ public class OAuthDataPublisherServiceComponent {
         OAuthDataPublisherServiceHolder.getInstance().removeOauthEventListener(oAuthEventInterceptor);
     }
 
+    protected void setIdentityCoreInitializedEvent(IdentityCoreInitializedEvent identityCoreInitializedEvent) {
+
+        // Nothing to implement
+    }
+
+    protected void unsetIdentityCoreInitializedEvent(IdentityCoreInitializedEvent identityCoreInitializedEvent) {
+
+        // Nothing to implement
+    }
 }
