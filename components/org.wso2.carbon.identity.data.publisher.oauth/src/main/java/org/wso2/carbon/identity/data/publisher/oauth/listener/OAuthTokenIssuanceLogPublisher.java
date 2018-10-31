@@ -28,8 +28,11 @@ import org.wso2.carbon.identity.oauth2.authz.OAuthAuthzReqMessageContext;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeRespDTO;
+import org.wso2.carbon.identity.oauth2.dto.OAuth2IntrospectionResponseDTO;
+import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
+import org.wso2.carbon.identity.oauth2.validators.OAuth2TokenValidationMessageContext;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 
 import java.util.HashMap;
@@ -54,11 +57,26 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
     private static final String PROP_TIME_TAKEN_IN_MILLIS = "time_taken_in_millis";
     private static final String PROP_EXPIRES_IN_SECONDS = "expires_in_seconds";
     private static final String PROP_SUCCESS = "success";
-    private static final String LOG_INFO_TYPE = "OAUTH TOKEN";
+    private static final String LOG_INFO_TYPE_TOKEN = "OAUTH TOKEN";
     private static final String NOT_AVAILABLE = "N/A";
     private static final String TRANSACTION_LOG_FORMAT = "Type: %s | Info: %s";
+    private static final String LOG_INFO_TYPE_INTROSPECTION = "OAUTH INTROSPECTION";
+    private static final String PROP_TYPE = "type";
+    private static final String TYPE_OAUTH = "oauth";
+    private static final String TYPE_INTROSPECTION = "introspection";
+    private static final String PROP_LOG_TOKEN = "Log.Token";
+    private static final String PROP_TOKEN = "token";
 
+    private static boolean isTokenLoggable;
     private static ThreadLocal<Long> startTime = new ThreadLocal<>();
+
+    public OAuthTokenIssuanceLogPublisher() {
+
+        super.init(initConfig);
+        String isTokenLoggableProperty = this.properties.getProperty(PROP_LOG_TOKEN);
+        isTokenLoggable = StringUtils.isNotEmpty(isTokenLoggableProperty) &&
+                Boolean.parseBoolean(isTokenLoggableProperty);
+    }
 
     public void onPreTokenIssue(OAuth2AccessTokenReqDTO tokenReqDTO, OAuthTokenReqMessageContext tokReqMsgCtx,
                                 Map<String, Object> params) throws IdentityOAuth2Exception {
@@ -81,7 +99,7 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
 
         try {
             String jsonInfo = getJsonInfoForPostTokenIssue(tokenReqDTO, tokenRespDTO, tokReqMsgCtx, params);
-            logTransactionInfo(jsonInfo);
+            logTransactionInfo(jsonInfo, LOG_INFO_TYPE_TOKEN);
         } catch (Throwable e) {
             // Catching a throwable as we do no need to interrupt the code flow since these are logging operations.
             if (LOG.isDebugEnabled()) {
@@ -119,6 +137,7 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
             Map<String, Object> infoParams = new HashMap<>();
             Gson gson = new Gson();
 
+            infoParams.put(PROP_TYPE, TYPE_OAUTH);
             addStringToMap(PROP_CLIENT_ID, clientId, infoParams);
             addStringToMap(PROP_GRANT_TYPE, grantType, infoParams);
             addStringToMap(PROP_SCOPE, scopeString, infoParams);
@@ -135,7 +154,7 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
                 infoParams.put(PROP_TIME_TAKEN_IN_MILLIS, timeTaken);
             }
 
-            logTransactionInfo(gson.toJson(infoParams));
+            logTransactionInfo(gson.toJson(infoParams), LOG_INFO_TYPE_TOKEN);
         } catch (Throwable e) {
             // Catching a throwable as we do no need to interrupt the code flow since these are logging operations.
             if (LOG.isDebugEnabled()) {
@@ -161,7 +180,7 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
 
         try {
             String jsonInfo = getJsonInfoForPostTokenIssue(tokenReqDTO, tokenRespDTO, tokReqMsgCtx, params);
-            logTransactionInfo(jsonInfo);
+            logTransactionInfo(jsonInfo, LOG_INFO_TYPE_TOKEN);
         } catch (Throwable e) {
             // Catching a throwable as we do no need to interrupt the code flow since these are logging operations.
             if (LOG.isDebugEnabled()) {
@@ -203,6 +222,7 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
         Map<String, Object> infoParams = new HashMap<>();
         Gson gson = new Gson();
 
+        infoParams.put(PROP_TYPE, TYPE_OAUTH);
         addStringToMap(PROP_CLIENT_ID, clientId, infoParams);
         addStringToMap(PROP_GRANT_TYPE, grantType, infoParams);
         addStringToMap(PROP_SCOPE, scopeString, infoParams);
@@ -227,7 +247,7 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
         try {
             params.put(PROP_SUCCESS, false);
             Gson gson = new Gson();
-            logTransactionInfo(gson.toJson(params));
+            logTransactionInfo(gson.toJson(params), LOG_INFO_TYPE_TOKEN);
         } catch (Throwable e) {
             // Catching a throwable as we do no need to interrupt the code flow since these are logging operations.
             if (LOG.isDebugEnabled()) {
@@ -245,9 +265,119 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
         }
     }
 
-    private void logTransactionInfo(String info) {
+    /**
+     * printing the log for given log info type
+     *
+     * @param info
+     * @param logInfoType
+     */
+    private void logTransactionInfo(String info, String logInfoType) {
 
-        String transactionEntry = String.format(TRANSACTION_LOG_FORMAT, LOG_INFO_TYPE, info);
+        String transactionEntry = String.format(TRANSACTION_LOG_FORMAT, logInfoType, info);
         TRANSACTION_LOG.info(transactionEntry);
+    }
+
+    @Override
+    public void onPreTokenValidation(OAuth2TokenValidationRequestDTO validationReqDTO, Map<String, Object> params)
+            throws IdentityOAuth2Exception {
+
+        startTime.remove();
+        startTime.set(System.currentTimeMillis());
+    }
+
+    @Override
+    public void onPostTokenValidation(OAuth2TokenValidationRequestDTO oAuth2TokenValidationRequestDTO,
+                                      OAuth2IntrospectionResponseDTO oAuth2IntrospectionResponseDTO,
+                                      Map<String, Object> params) throws IdentityOAuth2Exception {
+
+        try {
+            String jsonInfo = getJsonInfoForPostTokenValidation(oAuth2TokenValidationRequestDTO,
+                    oAuth2IntrospectionResponseDTO, params);
+            logTransactionInfo(jsonInfo, LOG_INFO_TYPE_INTROSPECTION);
+        } catch (Throwable e) {
+            // Catching a throwable as we do no need to interrupt the code flow since these are logging operations.
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Error occurred while logging token introspection information.", e);
+            }
+        } finally {
+            startTime.remove();
+        }
+    }
+
+    /**
+     * Return json format string to print the log.
+     *
+     * @param oAuth2TokenValidationRequestDTO
+     * @param oAuth2IntrospectionResponseDTO
+     * @param params
+     * @return
+     */
+    protected String getJsonInfoForPostTokenValidation(OAuth2TokenValidationRequestDTO oAuth2TokenValidationRequestDTO,
+                                                       OAuth2IntrospectionResponseDTO oAuth2IntrospectionResponseDTO,
+                                                       Map<String, Object> params) {
+
+        Gson gson = new Gson();
+        Map<String, Object> infoParams = new HashMap<>();
+
+        if (oAuth2IntrospectionResponseDTO.isActive()) {
+            long expiresIn = oAuth2IntrospectionResponseDTO.getExp() - System.currentTimeMillis() / 1000L;
+            long issuedAt = oAuth2IntrospectionResponseDTO.getIat();
+            String scope = oAuth2IntrospectionResponseDTO.getScope();
+            String clientId = oAuth2IntrospectionResponseDTO.getClientId();
+            String username = oAuth2IntrospectionResponseDTO.getUsername();
+            OAuth2TokenValidationMessageContext oAuth2TokenValidationMessageContext =
+                    (OAuth2TokenValidationMessageContext) oAuth2IntrospectionResponseDTO.getProperties().
+                            get("OAuth2TokenValidationMessageContext");
+            AccessTokenDO accessTokenDO =
+                    (AccessTokenDO) oAuth2TokenValidationMessageContext.getProperty("AccessTokenDO");
+            String grantType = accessTokenDO.getGrantType();
+
+            infoParams.put(PROP_SUCCESS, true);
+            infoParams.put(PROP_EXPIRES_IN_SECONDS, expiresIn);
+            infoParams.put(PROP_ISSUED_TIME, issuedAt);
+            addStringToMap(PROP_SCOPE, scope, infoParams);
+            addStringToMap(PROP_CLIENT_ID, clientId, infoParams);
+            addStringToMap(PROP_USER, username, infoParams);
+            addStringToMap(PROP_GRANT_TYPE, grantType, infoParams);
+        } else {
+            infoParams.put(PROP_SUCCESS, false);
+            addStringToMap(PROP_ERROR, oAuth2IntrospectionResponseDTO.getError(), infoParams);
+        }
+
+        if (isTokenLoggable) {
+            addStringToMap(PROP_TOKEN, oAuth2TokenValidationRequestDTO.getAccessToken().getIdentifier(),
+                    infoParams);
+        }
+        infoParams.put(PROP_TYPE, TYPE_INTROSPECTION);
+        long timeTaken = System.currentTimeMillis() - startTime.get();
+        infoParams.put(PROP_TIME_TAKEN_IN_MILLIS, timeTaken);
+        return gson.toJson(infoParams);
+    }
+
+    @Override
+    public void onTokenValidationException(OAuth2TokenValidationRequestDTO introspectionRequest,
+                                           Map<String, Object> params) throws IdentityOAuth2Exception {
+
+        try {
+            params.put(PROP_TYPE, TYPE_INTROSPECTION);
+            params.put(PROP_SUCCESS, false);
+            if (isTokenLoggable && introspectionRequest != null) {
+                addStringToMap(PROP_TOKEN, introspectionRequest.getAccessToken().getIdentifier(),
+                        params);
+            }
+            if (startTime.get() != null) {
+                long timeTaken = System.currentTimeMillis() - startTime.get();
+                params.put(PROP_TIME_TAKEN_IN_MILLIS, timeTaken);
+            }
+            Gson gson = new Gson();
+            logTransactionInfo(gson.toJson(params), LOG_INFO_TYPE_INTROSPECTION);
+        } catch (Throwable e) {
+            // Catching a throwable as we do no need to interrupt the code flow since these are logging operations.
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Error occurred while logging token introspection error information.", e);
+            }
+        } finally {
+            startTime.remove();
+        }
     }
 }

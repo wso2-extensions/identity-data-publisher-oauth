@@ -18,6 +18,8 @@
 
 package org.wso2.carbon.identity.data.publisher.oauth;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.data.publisher.oauth.internal.OAuthDataPublisherServiceHolder;
 import org.wso2.carbon.identity.oauth.common.OAuthConstants;
@@ -43,6 +45,7 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
 
     private List<OAuthEventInterceptor> oAuthEventInterceptors = OAuthDataPublisherServiceHolder.getInstance()
             .getOAuthEventInterceptors();
+    private static final Log LOG = LogFactory.getLog(OAuthInterceptorHandlerProxy.class);
 
     @Override
     public void onPreTokenIssue(OAuth2AccessTokenReqDTO oAuth2AccessTokenReqDTO, OAuthTokenReqMessageContext
@@ -213,5 +216,20 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
     @Override
     public String getName() {
         return OAuthConstants.OAUTH_INTERCEPTOR_PROXY;
+    }
+
+    @Override
+    public void onTokenValidationException(OAuth2TokenValidationRequestDTO introspectionRequest,
+                                           Map<String, Object> params) throws IdentityOAuth2Exception {
+
+        for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
+            boolean isEnabled = interceptor.isEnabled();
+            if (isEnabled) {
+                interceptor.onTokenValidationException(introspectionRequest, params);
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Interceptor %s is %s", interceptor.getName(), isEnabled));
+            }
+        }
     }
 }
