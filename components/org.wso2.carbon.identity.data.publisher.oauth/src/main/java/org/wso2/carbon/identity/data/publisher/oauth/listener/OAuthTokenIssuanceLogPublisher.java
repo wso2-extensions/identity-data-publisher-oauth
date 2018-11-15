@@ -246,6 +246,7 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
 
         try {
             params.put(PROP_SUCCESS, false);
+            params.put(PROP_TYPE, TYPE_OAUTH);
             Gson gson = new Gson();
             logTransactionInfo(gson.toJson(params), LOG_INFO_TYPE_TOKEN);
         } catch (Throwable e) {
