@@ -46,9 +46,10 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
     }
 
     @Override
-    public void onPostTokenIssue(OAuth2AccessTokenReqDTO tokenReqDTO, OAuth2AccessTokenRespDTO tokenRespDTO,
-                                 OAuthTokenReqMessageContext tokReqMsgCtx, Map<String, Object> params)
-            throws IdentityOAuth2Exception {
+    public void onPostTokenIssue(OAuth2AccessTokenReqDTO tokenReqDTO,
+                                 OAuth2AccessTokenRespDTO tokenRespDTO,
+                                 OAuthTokenReqMessageContext tokReqMsgCtx,
+                                 Map<String, Object> params) throws IdentityOAuth2Exception {
 
         if (!isPasswordGrant(tokenReqDTO)) {
             return;
@@ -59,6 +60,7 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
         String authenticatedIdp = "N/A";
         String authenticatedSubjectIdentifier = "N/A";
         String authenticatedUserTenantDomain = "N/A";
+        String auditResult;
 
         if (tokReqMsgCtx.getProperty("OAuthAppDO") instanceof OAuthAppDO) {
             OAuthAppDO oAuthAppDO = (OAuthAppDO) tokReqMsgCtx.getProperty("OAuthAppDO");
@@ -66,9 +68,12 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
             serviceProvider = oAuthAppDO.getApplicationName();
         }
 
-        if (tokReqMsgCtx.getAuthorizedUser() != null) {
+        if (isTokenRequestSuccessful(tokReqMsgCtx)) {
+            auditResult = FrameworkConstants.AUDIT_SUCCESS;
             authenticatedSubjectIdentifier = tokReqMsgCtx.getAuthorizedUser().getAuthenticatedSubjectIdentifier();
             authenticatedUserTenantDomain = tokReqMsgCtx.getAuthorizedUser().getTenantDomain();
+        } else {
+            auditResult = FrameworkConstants.AUDIT_FAILED;
         }
 
         String auditData = "\"" + "ContextIdentifier" + "\" : \"" + "N/A"
@@ -80,11 +85,18 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
                 + "\",\"" + "AuthenticatedIdP" + "\" : \"" + authenticatedIdp
                 + "\"";
 
-        AUDIT_LOG.info(String.format(
-                FrameworkConstants.AUDIT_MESSAGE,
+        AUDIT_LOG.info(String.format(FrameworkConstants.AUDIT_MESSAGE,
                 authenticatedSubjectIdentifier,
                 "PostTokenIssue",
-                "PasswordGrantAuditLogger", auditData, FrameworkConstants.AUDIT_SUCCESS));
+                "PasswordGrantAuditLogger",
+                auditData,
+                auditResult)
+        );
+    }
+
+    private boolean isTokenRequestSuccessful(OAuthTokenReqMessageContext tokReqMsgCtx) {
+        // If password grant request was successful we will have a valid authorized user set in the token context.
+        return tokReqMsgCtx.getAuthorizedUser() != null;
     }
 
     /**
@@ -104,7 +116,6 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
 
         IdentityEventListenerConfig identityEventListenerConfig = IdentityUtil.
                 readEventListenerProperty(AbstractIdentityHandler.class.getName(), this.getClass().getName());
-        return identityEventListenerConfig == null ? true :
-                Boolean.parseBoolean(identityEventListenerConfig.getEnable());
+        return identityEventListenerConfig == null || Boolean.parseBoolean(identityEventListenerConfig.getEnable());
     }
 }
