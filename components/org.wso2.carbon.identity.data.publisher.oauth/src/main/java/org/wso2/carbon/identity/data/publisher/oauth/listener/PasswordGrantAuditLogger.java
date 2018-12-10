@@ -58,7 +58,6 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
 
         String requestType = "N/A";
         String serviceProvider = "N/A";
-        String authenticatedIdp = "N/A";
         String authenticatedSubjectIdentifier = "N/A";
         String authenticatedUserStoreDomain = "N/A";
         String authenticatedUserTenantDomain = "N/A";
@@ -81,14 +80,12 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
             auditResult = FrameworkConstants.AUDIT_FAILED;
         }
 
-        String auditData = "\"" + "ContextIdentifier" + "\" : \"" + "N/A"
-                + "\",\"" + "AuthenticatedUser" + "\" : \"" + authenticatedSubjectIdentifier
+        String auditData = "\"" + "AuthenticatedUser" + "\" : \"" + authenticatedSubjectIdentifier
                 + "\",\"" + "AuthenticatedUserStoreDomain" + "\" : \"" + authenticatedUserStoreDomain
                 + "\",\"" + "AuthenticatedUserTenantDomain" + "\" : \"" + authenticatedUserTenantDomain
                 + "\",\"" + "ServiceProvider" + "\" : \"" + serviceProvider
                 + "\",\"" + "RequestType" + "\" : \"" + requestType
                 + "\",\"" + "RelyingParty" + "\" : \"" + tokenReqDTO.getClientId()
-                + "\",\"" + "AuthenticatedIdP" + "\" : \"" + authenticatedIdp
                 + "\"";
 
         AUDIT_LOG.info(String.format(FrameworkConstants.AUDIT_MESSAGE,
