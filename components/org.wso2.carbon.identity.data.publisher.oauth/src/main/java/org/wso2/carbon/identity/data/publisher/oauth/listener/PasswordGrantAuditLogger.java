@@ -30,6 +30,7 @@ import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
+import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
 import java.util.Map;
 
@@ -59,25 +60,30 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
         String serviceProvider = "N/A";
         String authenticatedIdp = "N/A";
         String authenticatedSubjectIdentifier = "N/A";
+        String authenticatedUserStoreDomain = "N/A";
         String authenticatedUserTenantDomain = "N/A";
+        String requestInitiator;
         String auditResult;
 
         if (tokReqMsgCtx.getProperty("OAuthAppDO") instanceof OAuthAppDO) {
             OAuthAppDO oAuthAppDO = (OAuthAppDO) tokReqMsgCtx.getProperty("OAuthAppDO");
-            requestType = oAuthAppDO.getOauthVersion();
+            requestType = getRequestType(tokReqMsgCtx);
             serviceProvider = oAuthAppDO.getApplicationName();
         }
 
+        requestInitiator = getResourceOwnerUsername(tokReqMsgCtx);
         if (isTokenRequestSuccessful(tokReqMsgCtx)) {
-            auditResult = FrameworkConstants.AUDIT_SUCCESS;
-            authenticatedSubjectIdentifier = tokReqMsgCtx.getAuthorizedUser().getAuthenticatedSubjectIdentifier();
+            authenticatedSubjectIdentifier = getAuthenticatedSubjectIdentifier(tokReqMsgCtx);
+            authenticatedUserStoreDomain = tokReqMsgCtx.getAuthorizedUser().getUserStoreDomain();
             authenticatedUserTenantDomain = tokReqMsgCtx.getAuthorizedUser().getTenantDomain();
+            auditResult = FrameworkConstants.AUDIT_SUCCESS;
         } else {
             auditResult = FrameworkConstants.AUDIT_FAILED;
         }
 
         String auditData = "\"" + "ContextIdentifier" + "\" : \"" + "N/A"
                 + "\",\"" + "AuthenticatedUser" + "\" : \"" + authenticatedSubjectIdentifier
+                + "\",\"" + "AuthenticatedUserStoreDomain" + "\" : \"" + authenticatedUserStoreDomain
                 + "\",\"" + "AuthenticatedUserTenantDomain" + "\" : \"" + authenticatedUserTenantDomain
                 + "\",\"" + "ServiceProvider" + "\" : \"" + serviceProvider
                 + "\",\"" + "RequestType" + "\" : \"" + requestType
@@ -86,12 +92,31 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
                 + "\"";
 
         AUDIT_LOG.info(String.format(FrameworkConstants.AUDIT_MESSAGE,
-                authenticatedSubjectIdentifier,
+                requestInitiator,
                 "PostTokenIssue",
                 "PasswordGrantAuditLogger",
                 auditData,
                 auditResult)
         );
+    }
+
+    /**
+     * Returns the 'username' param in the password grant request.
+     *
+     * @param tokReqMsgCtx
+     * @return Full qualified username
+     */
+    private String getResourceOwnerUsername(OAuthTokenReqMessageContext tokReqMsgCtx) {
+        return tokReqMsgCtx.getOauth2AccessTokenReqDTO().getResourceOwnerUsername();
+    }
+
+    private String getRequestType(OAuthTokenReqMessageContext tokReqMsgCtx) {
+        boolean isOpenIdConnect = OAuth2Util.isOIDCAuthzRequest(tokReqMsgCtx.getOauth2AccessTokenReqDTO().getScope());
+        return isOpenIdConnect ? FrameworkConstants.OIDC : FrameworkConstants.OAUTH2;
+    }
+
+    private String getAuthenticatedSubjectIdentifier(OAuthTokenReqMessageContext tokReqMsgCtx) {
+        return tokReqMsgCtx.getAuthorizedUser().getAuthenticatedSubjectIdentifier();
     }
 
     private boolean isTokenRequestSuccessful(OAuthTokenReqMessageContext tokReqMsgCtx) {
@@ -101,6 +126,7 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
 
     /**
      * Checks whether request is from password grant.
+     *
      * @param tokenReqDTO Token request DTO.
      * @return True if this request is from password grant.
      */
