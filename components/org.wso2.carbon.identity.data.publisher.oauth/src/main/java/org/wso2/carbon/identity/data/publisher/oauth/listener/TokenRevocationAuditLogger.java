@@ -117,7 +117,6 @@ public class TokenRevocationAuditLogger extends AbstractOAuthEventInterceptor {
                 auditResult
                 )
         );
-
     }
 
     /**
@@ -144,5 +143,4 @@ public class TokenRevocationAuditLogger extends AbstractOAuthEventInterceptor {
         }
         return serviceProvider;
     }
-
 }
