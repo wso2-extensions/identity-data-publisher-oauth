@@ -237,7 +237,7 @@
     </build>
 
     <properties>
-        <carbon.kernel.version>4.4.38</carbon.kernel.version>
+        <carbon.kernel.version>4.4.40</carbon.kernel.version>
         <identity.inbound.auth.oauth.version>6.0.68</identity.inbound.auth.oauth.version>
         <carbon.kernel.package.import.version.range>[4.4.0, 5.0.0)</carbon.kernel.package.import.version.range>
         <identity.framework.version>5.7.0</identity.framework.version>
