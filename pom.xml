@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.wso2</groupId>
         <artifactId>wso2</artifactId>
-        <version>1</version>
+        <version>1.2</version>
     </parent>
 
     <groupId>org.wso2.carbon.identity.data.publisher.oauth</groupId>
@@ -226,22 +226,41 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <!--This parameter disables doclint-->
+                            <doclint>none</doclint>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
     <properties>
-        <carbon.kernel.version>4.5.0-m1</carbon.kernel.version>
-        <identity.inbound.auth.oauth.version>6.1.0</identity.inbound.auth.oauth.version>
-        <identity.framework.version>5.13.5</identity.framework.version>
-        <carbon.analytics-common.version>5.2.1</carbon.analytics-common.version>
+        <carbon.kernel.version>4.5.0-m3</carbon.kernel.version>
+        <identity.inbound.auth.oauth.version>6.2.0</identity.inbound.auth.oauth.version>
+        <identity.framework.version>5.14.0</identity.framework.version>
+        <carbon.analytics-common.version>5.2.2</carbon.analytics-common.version>
         <carbon.p2.plugin.version>5.2.3</carbon.p2.plugin.version>
         <maven.buildnumber.plugin.version>1.4</maven.buildnumber.plugin.version>
         <identity.data.publisher.oauth.exp.version>${project.version}</identity.data.publisher.oauth.exp.version>
         <com.google.code.gson.version>2.8.5</com.google.code.gson.version>
 
         <carbon.kernel.imp.pkg.version.range>[4.5.0, 5.0.0)</carbon.kernel.imp.pkg.version.range>
-        <identity.framework.imp.pkg.version.range>[5.13.0,6.0.0)</identity.framework.imp.pkg.version.range>
-        <identity.inbound.auth.oauth.imp.pkg.version.range>[6.1.0,7.0.0)</identity.inbound.auth.oauth.imp.pkg.version.range>
+        <identity.framework.imp.pkg.version.range>[5.14.0,6.0.0)</identity.framework.imp.pkg.version.range>
+        <identity.inbound.auth.oauth.imp.pkg.version.range>[6.2.0,7.0.0)</identity.inbound.auth.oauth.imp.pkg.version.range>
         <carbon.analytics-common.imp.pkg.version.range>[5.2.0,6.0.0)</carbon.analytics-common.imp.pkg.version.range>
         <osgi.framework.imp.pkg.version.range>[1.7.0, 2.0.0)</osgi.framework.imp.pkg.version.range>
         <osgi.service.component.imp.pkg.version.range>[1.2.0, 2.0.0)</osgi.service.component.imp.pkg.version.range>
