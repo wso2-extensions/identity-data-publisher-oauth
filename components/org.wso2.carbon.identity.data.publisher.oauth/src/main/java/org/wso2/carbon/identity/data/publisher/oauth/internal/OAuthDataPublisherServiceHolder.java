@@ -35,7 +35,7 @@ public class OAuthDataPublisherServiceHolder {
 
     private static OAuthDataPublisherServiceHolder serviceHolder = new OAuthDataPublisherServiceHolder();
 
-    private static Log log = LogFactory.getLog(OAuthDataPublisherServiceHolder.class);
+    private static final Log log = LogFactory.getLog(OAuthDataPublisherServiceHolder.class);
 
     private OAuthDataPublisherServiceHolder() {
 

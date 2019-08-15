@@ -47,7 +47,7 @@ import java.util.Collections;
         immediate = true)
 public class OAuthDataPublisherServiceComponent {
 
-    private static Log log = LogFactory.getLog(OAuthDataPublisherServiceComponent.class);
+    private static final Log log = LogFactory.getLog(OAuthDataPublisherServiceComponent.class);
 
     @Activate
     protected void activate(ComponentContext context) {
