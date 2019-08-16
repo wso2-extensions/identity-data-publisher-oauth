@@ -42,7 +42,7 @@ public class TokenRevocationAuditLogger extends AbstractOAuthEventInterceptor {
 
     private static final Log AUDIT_LOG = LogFactory.getLog("AUDIT_LOG");
     public static final int MILLIS_TO_SECONDS_FACTOR = 1000;
-    private static Log log = LogFactory.getLog(TokenRevocationAuditLogger.class);
+    private static final Log log = LogFactory.getLog(TokenRevocationAuditLogger.class);
 
     public TokenRevocationAuditLogger() {
         super();
