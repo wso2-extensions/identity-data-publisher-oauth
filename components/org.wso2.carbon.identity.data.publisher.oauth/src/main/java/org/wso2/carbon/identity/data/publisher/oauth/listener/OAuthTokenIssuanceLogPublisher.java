@@ -267,10 +267,10 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
     }
 
     /**
-     * printing the log for given log info type
+     * Printing the log for given log info type.
      *
-     * @param info
-     * @param logInfoType
+     * @param info        Information to log.
+     * @param logInfoType Type of log.
      */
     private void logTransactionInfo(String info, String logInfoType) {
 

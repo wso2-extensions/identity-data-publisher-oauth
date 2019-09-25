@@ -138,11 +138,11 @@ public class OAuthDataPublisherServiceComponent {
             policy = ReferencePolicy.DYNAMIC,
             unbind = "unsetIdentityCoreInitializedEvent")
     protected void setIdentityCoreInitializedEvent(IdentityCoreInitializedEvent identityCoreInitializedEvent) {
-        // Nothing to implement
+        // Nothing to implement.
     }
 
     protected void unsetIdentityCoreInitializedEvent(IdentityCoreInitializedEvent identityCoreInitializedEvent) {
-        // Nothing to implement
+        // Nothing to implement.
     }
 }
 
