@@ -143,7 +143,8 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
             tokenData.setRefreshTokenValidityMillis(tokenDO.getRefreshTokenValidityPeriodInMillis());
             tokenData.setIssuedTime(tokenDO.getIssuedTime().getTime());
         }
-        List<String> requestedScopes = Arrays.asList(oauthAuthzMsgCtx.getAuthorizationReqDTO().getScopes());
+        List<String> requestedScopes = new LinkedList(Arrays.asList(oauthAuthzMsgCtx.getAuthorizationReqDTO().
+                getScopes()));
         List<String> grantedScopes = Arrays.asList(respDTO.getScope());
         requestedScopes.removeAll(grantedScopes);
         for (String scope : requestedScopes) {
