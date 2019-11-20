@@ -36,6 +36,7 @@ import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthTokenRevocati
 import org.wso2.carbon.identity.data.publisher.oauth.listener.OAuthTokenValidationDASDataPublisher;
 import org.wso2.carbon.identity.data.publisher.oauth.listener.PasswordGrantAuditLogger;
 import org.wso2.carbon.identity.data.publisher.oauth.listener.RefreshTokenGrantAuditLogger;
+import org.wso2.carbon.identity.data.publisher.oauth.listener.SAML2BearerGrantAuditLogger;
 import org.wso2.carbon.identity.data.publisher.oauth.listener.TokenRevocationAuditLogger;
 import org.wso2.carbon.identity.oauth.common.OAuthConstants;
 import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
@@ -61,6 +62,7 @@ public class OAuthDataPublisherServiceComponent {
             bundleContext.registerService(OAuthEventInterceptor.class, new OAuthTokenRevocationDASPublisher(), null);
             bundleContext.registerService(OAuthEventInterceptor.class, new OAuthInterceptorHandlerProxy(), null);
             bundleContext.registerService(OAuthEventInterceptor.class, new PasswordGrantAuditLogger(), null);
+            bundleContext.registerService(OAuthEventInterceptor.class, new SAML2BearerGrantAuditLogger(), null);
             bundleContext.registerService(OAuthEventInterceptor.class, new TokenRevocationAuditLogger(), null);
             bundleContext.registerService(OAuthEventInterceptor.class, new RefreshTokenGrantAuditLogger(), null);
         } catch (Throwable e) {
