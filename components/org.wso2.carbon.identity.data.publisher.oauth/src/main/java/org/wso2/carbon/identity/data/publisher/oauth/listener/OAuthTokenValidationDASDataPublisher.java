@@ -54,8 +54,18 @@ public class OAuthTokenValidationDASDataPublisher extends AbstractOAuthEventInte
                                       OAuth2TokenValidationResponseDTO oAuth2TokenValidationResponseDTO, Map<String,
             Object> params) throws IdentityOAuth2Exception {
 
-        AccessTokenDO accessTokenDO = OAuth2Util.getAccessTokenDOfromTokenIdentifier(oAuth2TokenValidationRequestDTO
-                .getAccessToken().getIdentifier());
+        AccessTokenDO accessTokenDO;
+        try {
+            accessTokenDO = OAuth2Util.getAccessTokenDOfromTokenIdentifier(oAuth2TokenValidationRequestDTO
+                    .getAccessToken().getIdentifier());
+        } catch (IllegalArgumentException e) {
+            // TODO such erroneous cases should be published through another publisher.
+            // Intentionally catch this RuntimeException to break the flow when the access token is invalid.
+            // There can be a different publisher which can publish that data in that erroneous flow.
+            LOG.error("The access token is invalid. Hence failed to publish data through "
+                    + OAuthDataPublisherConstants.OAUTH_TOKEN_VALIDATION_DAS_DATA_PUBLISHER);
+            return;
+        }
 
         StringBuilder authzScopes = new StringBuilder();
         List<String> grantedScopes = Arrays.asList(oAuth2TokenValidationResponseDTO.getScope());
