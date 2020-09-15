@@ -243,7 +243,7 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
                 interceptor.onPreTokenRevocationBySystem(accessTokenDO, params);
             }
             if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Interceptor %s is %s", interceptor.getName(), isEnabled));
+                LOG.debug(String.format("Interceptor %s is enabled: %s", interceptor.getName(), isEnabled));
             }
         }
     }
