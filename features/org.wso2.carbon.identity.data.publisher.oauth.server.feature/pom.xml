@@ -22,7 +22,7 @@
         <groupId>org.wso2.carbon.identity.data.publisher.oauth</groupId>
         <artifactId>identity-data-publisher-oauth</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>1.3.5-SNAPSHOT</version>
+        <version>1.4.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
