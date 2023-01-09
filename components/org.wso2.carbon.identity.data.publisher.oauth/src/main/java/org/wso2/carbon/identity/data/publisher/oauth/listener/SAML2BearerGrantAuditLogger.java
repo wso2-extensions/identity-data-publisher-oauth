@@ -18,9 +18,11 @@
 
 package org.wso2.carbon.identity.data.publisher.oauth.listener;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
+import org.wso2.carbon.identity.central.log.mgt.utils.LoggerUtils;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
@@ -76,6 +78,16 @@ public class SAML2BearerGrantAuditLogger extends AbstractOAuthEventInterceptor {
             authenticatedUserTenantDomain = tokReqMsgCtx.getAuthorizedUser().getTenantDomain();
             auditResult = FrameworkConstants.AUDIT_SUCCESS;
 
+            if (LoggerUtils.isLogMaskingEnable) {
+                String maskedUsername = LoggerUtils.getMaskedContent(requestInitiator);
+                if (StringUtils.isNotBlank(requestInitiator) && StringUtils.isNotBlank(authenticatedUserTenantDomain)) {
+                    requestInitiator = IdentityUtil.getInitiatorId(requestInitiator, authenticatedUserTenantDomain);
+                }
+                if (StringUtils.isBlank(requestInitiator)) {
+                    requestInitiator = maskedUsername;
+                }
+            }
+
             String auditData = "\"" + "AuthenticatedUser" + "\" : \"" + authenticatedSubjectIdentifier
                     + "\",\"" + "AuthenticatedUserStoreDomain" + "\" : \"" + authenticatedUserStoreDomain
                     + "\",\"" + "AuthenticatedUserTenantDomain" + "\" : \"" + authenticatedUserTenantDomain
@@ -92,6 +104,9 @@ public class SAML2BearerGrantAuditLogger extends AbstractOAuthEventInterceptor {
                     auditResult)
             );
         } else {
+            if (LoggerUtils.isLogMaskingEnable) {
+                requestInitiator = LoggerUtils.getMaskedContent(requestInitiator);
+            }
             auditResult = FrameworkConstants.AUDIT_FAILED;
             String error = "Error Description :" + tokenRespDTO.getErrorMsg() + "Error Type :" +
                     tokenRespDTO.getErrorCode();
