@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.central.log.mgt.utils.LoggerUtils;
 import org.wso2.carbon.identity.oauth.event.AbstractOAuthEventInterceptor;
 import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
@@ -133,7 +134,9 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
             } else {
                 user = NOT_AVAILABLE;
             }
-
+            if (LoggerUtils.isLogMaskingEnable && StringUtils.isNotBlank(user) && !user.equals(NOT_AVAILABLE)) {
+                user = LoggerUtils.getMaskedContent(user);
+            }
             Map<String, Object> infoParams = new HashMap<>();
             Gson gson = new Gson();
 
@@ -218,7 +221,9 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
         } else {
             user = NOT_AVAILABLE;
         }
-
+        if (LoggerUtils.isLogMaskingEnable && StringUtils.isNotBlank(user) && !user.equals(NOT_AVAILABLE)) {
+            user = LoggerUtils.getMaskedContent(user);
+        }
         Map<String, Object> infoParams = new HashMap<>();
         Gson gson = new Gson();
 
@@ -326,6 +331,9 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
             String scope = oAuth2IntrospectionResponseDTO.getScope();
             String clientId = oAuth2IntrospectionResponseDTO.getClientId();
             String username = oAuth2IntrospectionResponseDTO.getUsername();
+            if (LoggerUtils.isLogMaskingEnable && StringUtils.isNotBlank(username)) {
+                username = LoggerUtils.getMaskedContent(username);
+            }
             OAuth2TokenValidationMessageContext oAuth2TokenValidationMessageContext =
                     (OAuth2TokenValidationMessageContext) oAuth2IntrospectionResponseDTO.getProperties().
                             get("OAuth2TokenValidationMessageContext");
