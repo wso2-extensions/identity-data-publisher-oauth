@@ -134,11 +134,9 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
             } else {
                 user = NOT_AVAILABLE;
             }
-
             if (LoggerUtils.isLogMaskingEnable && StringUtils.isNotBlank(user) && !user.equals(NOT_AVAILABLE)) {
                 user = LoggerUtils.getMaskedContent(user);
             }
-
             Map<String, Object> infoParams = new HashMap<>();
             Gson gson = new Gson();
 
@@ -223,11 +221,9 @@ public class OAuthTokenIssuanceLogPublisher extends AbstractOAuthEventIntercepto
         } else {
             user = NOT_AVAILABLE;
         }
-
         if (LoggerUtils.isLogMaskingEnable && StringUtils.isNotBlank(user) && !user.equals(NOT_AVAILABLE)) {
             user = LoggerUtils.getMaskedContent(user);
         }
-
         Map<String, Object> infoParams = new HashMap<>();
         Gson gson = new Gson();
 
