@@ -83,7 +83,7 @@ public class SAML2BearerGrantAuditLogger extends AbstractOAuthEventInterceptor {
                     requestInitiator = IdentityUtil.getInitiatorId(requestInitiator, authenticatedUserTenantDomain);
                 }
                 if (StringUtils.isBlank(requestInitiator)) {
-                    requestInitiator = LoggerUtils.getMaskedContent(requestInitiator);
+                    requestInitiator = LoggerUtils.getMaskedContent(getResourceOwnerUsername(tokReqMsgCtx));
                 }
             }
 

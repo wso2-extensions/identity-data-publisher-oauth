@@ -86,9 +86,11 @@ public class PasswordGrantAuditLogger extends AbstractOAuthEventInterceptor {
             if (StringUtils.isNotBlank(requestInitiator) && StringUtils.isNotBlank(authenticatedUserTenantDomain) &&
                     !authenticatedUserTenantDomain.equals("N/A")) {
                 requestInitiator = IdentityUtil.getInitiatorId(requestInitiator, authenticatedUserTenantDomain);
+            } else {
+                requestInitiator = LoggerUtils.getMaskedContent(requestInitiator);
             }
             if (StringUtils.isBlank(requestInitiator)) {
-                requestInitiator = LoggerUtils.getMaskedContent(requestInitiator);
+                requestInitiator = LoggerUtils.getMaskedContent(getResourceOwnerUsername(tokReqMsgCtx));
             }
         }
 
