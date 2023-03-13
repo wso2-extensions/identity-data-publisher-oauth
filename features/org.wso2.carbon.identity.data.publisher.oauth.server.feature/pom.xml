@@ -90,7 +90,7 @@
                             </bundles>
                             <importFeatures>
                                 <importFeatureDef>org.wso2.carbon.core:compatible:${carbon.kernel.feature.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.identity.core.server:compatible:${identity.framework.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.core.server:greaterOrEqual:${identity.framework.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.identity.oauth.server:compatible:${identity.inbound.auth.oauth.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.event.publisher.aggregate:compatible:${carbon.analytics-common.version}</importFeatureDef>
                             </importFeatures>
