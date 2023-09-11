@@ -63,7 +63,7 @@ public class RefreshTokenGrantAuditLogger extends AbstractOAuthEventInterceptor 
 
         if (isTokenRequestSuccessful(tokReqMsgCtx)) {
             requestInitiator = tokReqMsgCtx.getAuthorizedUser().toString();
-            authenticatedSubjectIdentifier = getAuthenticatedSubjectIdentifier(tokReqMsgCtx);
+            authenticatedSubjectIdentifier = tokReqMsgCtx.getAuthorizedUser().getLoggableUserId();
             authenticatedUserStoreDomain = tokReqMsgCtx.getAuthorizedUser().getUserStoreDomain();
             authenticatedUserTenantDomain = tokReqMsgCtx.getAuthorizedUser().getTenantDomain();
             auditResult = FrameworkConstants.AUDIT_SUCCESS;
@@ -92,10 +92,6 @@ public class RefreshTokenGrantAuditLogger extends AbstractOAuthEventInterceptor 
     private String getRequestType(OAuthTokenReqMessageContext tokReqMsgCtx) {
         boolean isOpenIdConnect = OAuth2Util.isOIDCAuthzRequest(tokReqMsgCtx.getOauth2AccessTokenReqDTO().getScope());
         return isOpenIdConnect ? FrameworkConstants.OIDC : FrameworkConstants.OAUTH2;
-    }
-
-    private String getAuthenticatedSubjectIdentifier(OAuthTokenReqMessageContext tokReqMsgCtx) {
-        return tokReqMsgCtx.getAuthorizedUser().getAuthenticatedSubjectIdentifier();
     }
 
     private boolean isTokenRequestSuccessful(OAuthTokenReqMessageContext tokReqMsgCtx) {
