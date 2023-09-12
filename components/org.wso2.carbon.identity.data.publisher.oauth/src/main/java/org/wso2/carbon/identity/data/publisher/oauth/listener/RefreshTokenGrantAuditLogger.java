@@ -63,7 +63,7 @@ public class RefreshTokenGrantAuditLogger extends AbstractOAuthEventInterceptor 
 
         if (isTokenRequestSuccessful(tokReqMsgCtx)) {
             requestInitiator = tokReqMsgCtx.getAuthorizedUser().toString();
-            authenticatedSubjectIdentifier = tokReqMsgCtx.getAuthorizedUser().getLoggableUserId();
+            authenticatedSubjectIdentifier = tokReqMsgCtx.getAuthorizedUser().getLoggableMaskedUserId();
             authenticatedUserStoreDomain = tokReqMsgCtx.getAuthorizedUser().getUserStoreDomain();
             authenticatedUserTenantDomain = tokReqMsgCtx.getAuthorizedUser().getTenantDomain();
             auditResult = FrameworkConstants.AUDIT_SUCCESS;

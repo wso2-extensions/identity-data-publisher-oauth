@@ -73,7 +73,7 @@ public class SAML2BearerGrantAuditLogger extends AbstractOAuthEventInterceptor {
 
         requestInitiator = getResourceOwnerUsername(tokReqMsgCtx);
         if (isTokenRequestSuccessful(tokReqMsgCtx)) {
-            authenticatedSubjectIdentifier = tokReqMsgCtx.getAuthorizedUser().getLoggableUserId();
+            authenticatedSubjectIdentifier = tokReqMsgCtx.getAuthorizedUser().getLoggableMaskedUserId();
             authenticatedUserStoreDomain = tokReqMsgCtx.getAuthorizedUser().getUserStoreDomain();
             authenticatedUserTenantDomain = tokReqMsgCtx.getAuthorizedUser().getTenantDomain();
             auditResult = FrameworkConstants.AUDIT_SUCCESS;

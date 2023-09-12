@@ -75,13 +75,13 @@ public class TokenRevocationAuditLogger extends AbstractOAuthEventInterceptor {
             auditResult = FrameworkConstants.AUDIT_SUCCESS;
 
             if (refreshTokenDO != null && refreshTokenDO.getAuthorizedUser() != null) {
-                authenticatedSubjectIdentifier = refreshTokenDO.getAuthorizedUser().getLoggableUserId();
+                authenticatedSubjectIdentifier = refreshTokenDO.getAuthorizedUser().getLoggableMaskedUserId();
                 authenticatedUserTenantDomain = refreshTokenDO.getAuthorizedUser().getTenantDomain();
                 authenticatedUserStoreDomain = refreshTokenDO.getAuthorizedUser().getUserStoreDomain();
                 requestInitiator = refreshTokenDO.getAuthorizedUser().toString();
                 issuedTime = refreshTokenDO.getIssuedTime();
             } else if (accessTokenDO != null && accessTokenDO.getAuthzUser() != null) {
-                authenticatedSubjectIdentifier = accessTokenDO.getAuthzUser().getLoggableUserId();
+                authenticatedSubjectIdentifier = accessTokenDO.getAuthzUser().getLoggableMaskedUserId();
                 authenticatedUserTenantDomain = accessTokenDO.getAuthzUser().getTenantDomain();
                 authenticatedUserStoreDomain = accessTokenDO.getAuthzUser().getUserStoreDomain();
                 requestInitiator = accessTokenDO.getAuthzUser().toString();
