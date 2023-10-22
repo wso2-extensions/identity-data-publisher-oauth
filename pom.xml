@@ -190,7 +190,7 @@
     <properties>
         <carbon.kernel.version>4.6.0</carbon.kernel.version>
         <carbon.kernel.feature.version>4.6.0</carbon.kernel.feature.version>
-        <identity.inbound.auth.oauth.version>6.4.71</identity.inbound.auth.oauth.version>
+        <identity.inbound.auth.oauth.version>6.11.151</identity.inbound.auth.oauth.version>
         <identity.framework.version>5.25.325</identity.framework.version>
         <carbon.analytics-common.version>5.2.10</carbon.analytics-common.version>
         <carbon.p2.plugin.version>5.2.3</carbon.p2.plugin.version>
