@@ -65,6 +65,10 @@
     {
       "name": "issuedTime",
       "type": "LONG"
+    },
+    {
+      "name": "remoteIp",
+      "type": "STRING"
     }
   ]
 }
