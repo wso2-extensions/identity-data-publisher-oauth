@@ -47,6 +47,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequestWrapper;
+
 /**
  * Oauth Event Interceptor implemented for publishing oauth data to DAS
  */
@@ -102,7 +104,10 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         tokenData.setAuthzScopes(tokenRespDTO.getAuthorizedScopes());
         tokenData.setUnAuthzScopes(unauthzScopes.toString());
         tokenData.setAccessTokenValidityMillis(tokenRespDTO.getExpiresInMillis());
-
+        HttpServletRequestWrapper tokenReq = tokenReqDTO.getHttpServletRequestWrapper();
+        if (tokenReq != null) {
+            tokenData.setRemoteIp(tokenReq.getRemoteAddr());
+        }
         tokenData.addParameter(OAuthDataPublisherConstants.TENANT_ID, publishingTenantDomains);
         this.publishTokenIssueEvent(tokenData);
     }
@@ -129,6 +134,11 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
             if (oauthAuthzMsgCtx.getAuthorizationReqDTO() != null) {
                 publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(oauthAuthzMsgCtx
                         .getAuthorizationReqDTO().getTenantDomain(), user.getTenantDomain());
+                HttpServletRequestWrapper authzRequest = oauthAuthzMsgCtx.getAuthorizationReqDTO()
+                        .getHttpServletRequestWrapper();
+                if (authzRequest != null) {
+                    tokenData.setRemoteIp(authzRequest.getRemoteAddr());
+                }
             } else {
                 publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(null, user.getTenantDomain());
             }
@@ -174,7 +184,7 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
 
     public void publishTokenIssueEvent(TokenData tokenData) {
 
-        Object[] payloadData = new Object[14];
+        Object[] payloadData = new Object[15];
         payloadData[0] = tokenData.getUser();
         payloadData[1] = tokenData.getTenantDomain();
         payloadData[2] = tokenData.getUserStoreDomain();
@@ -189,6 +199,7 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         payloadData[11] = tokenData.getAccessTokenValidityMillis();
         payloadData[12] = tokenData.getRefreshTokenValidityMillis();
         payloadData[13] = tokenData.getIssuedTime();
+        payloadData[14] = tokenData.getRemoteIp();
 
         String[] publishingDomains = (String[]) tokenData.getParameter(OAuthDataPublisherConstants.TENANT_ID);
         if (publishingDomains != null && publishingDomains.length > 0) {

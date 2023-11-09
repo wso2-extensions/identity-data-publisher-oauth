@@ -42,6 +42,7 @@ public class TokenData<T1 extends Object, T2 extends Object> {
     private long issuedTime;
     private boolean isActive;
     private long revokedTime;
+    private String remoteIp;
     protected Map<T1, T2> parameters = new HashMap<>();
 
     public String getUser() {
@@ -170,6 +171,16 @@ public class TokenData<T1 extends Object, T2 extends Object> {
 
     public void setRevokedTime(long revokedTime) {
         this.revokedTime = revokedTime;
+    }
+
+    public String getRemoteIp() {
+
+        return remoteIp;
+    }
+
+    public void setRemoteIp(String remoteIp) {
+
+        this.remoteIp = remoteIp;
     }
 
     public void addParameter(T1 key, T2 value) {
