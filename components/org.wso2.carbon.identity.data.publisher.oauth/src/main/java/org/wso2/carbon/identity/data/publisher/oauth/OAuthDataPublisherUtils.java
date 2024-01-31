@@ -75,8 +75,8 @@ public class OAuthDataPublisherUtils {
 
     public static AccessTokenDO getTokenData(String token) throws IdentityOAuth2Exception,
             InvalidOAuthClientException {
-        TokenMgtDAO tokenMgtDAO = new TokenMgtDAO();
-        return tokenMgtDAO.retrieveAccessToken(token, true);
+
+        return OAuthTokenPersistenceFactory.getInstance().getAccessTokenDAO().getAccessToken(token, true);
     }
 
 }
