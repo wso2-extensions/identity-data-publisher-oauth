@@ -262,4 +262,34 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
             }
         }
     }
+
+    @Override
+    public void onPreTokenRevocationBySystem(String userUUID, Map<String, Object> params)
+            throws IdentityOAuth2Exception {
+
+        for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
+            boolean isEnabled = interceptor.isEnabled();
+            if (isEnabled) {
+                interceptor.onPreTokenRevocationBySystem(userUUID, params);
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Interceptor %s is enabled: %s", interceptor.getName(), isEnabled));
+            }
+        }
+    }
+
+    @Override
+    public void onPostTokenRevocationBySystem(String userUUID, Map<String, Object> params)
+            throws IdentityOAuth2Exception {
+
+        for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
+            boolean isEnabled = interceptor.isEnabled();
+            if (isEnabled) {
+                interceptor.onPostTokenRevocationBySystem(userUUID, params);
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Interceptor %s is enabled: %s", interceptor.getName(), isEnabled));
+            }
+        }
+    }
 }
