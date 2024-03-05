@@ -108,6 +108,13 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
         if (tokenReq != null) {
             tokenData.setRemoteIp(tokenReq.getRemoteAddr());
         }
+
+        // In an error scenario publish error info to the tokenData.
+        if (tokenRespDTO.isError()) {
+            tokenData.setErrorCode(tokenRespDTO.getErrorCode());
+            tokenData.setErrorMsg(tokenRespDTO.getErrorMsg());
+        }
+
         tokenData.addParameter(OAuthDataPublisherConstants.TENANT_ID, publishingTenantDomains);
         this.publishTokenIssueEvent(tokenData);
     }
