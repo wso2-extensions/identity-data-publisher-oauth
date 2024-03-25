@@ -35,6 +35,7 @@ import org.wso2.carbon.identity.oauth2.dto.OAuth2IntrospectionResponseDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationResponseDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
+import org.wso2.carbon.identity.oauth2.model.AuthzCodeDO;
 import org.wso2.carbon.identity.oauth2.model.RefreshTokenValidationDataDO;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
 
@@ -47,6 +48,16 @@ public class OAuthInterceptorHandlerProxy extends AbstractIdentityHandler implem
             .getOAuthEventInterceptors();
     private static final Log LOG = LogFactory.getLog(OAuthInterceptorHandlerProxy.class);
 
+    @Override
+    public void onPostAuthzCodeIssue(OAuthAuthzReqMessageContext oAuthAuthzMsgCtx, AuthzCodeDO authzCodeDO)
+            throws IdentityOAuth2Exception {
+
+        for (OAuthEventInterceptor interceptor : oAuthEventInterceptors) {
+            if (interceptor.isEnabled()) {
+                interceptor.onPostAuthzCodeIssue(oAuthAuthzMsgCtx, authzCodeDO);
+            }
+        }
+    }
     @Override
     public void onPreTokenIssue(OAuth2AccessTokenReqDTO oAuth2AccessTokenReqDTO, OAuthTokenReqMessageContext
             oAuthTokenReqMessageContext, Map<String, Object> params) throws IdentityOAuth2Exception {
