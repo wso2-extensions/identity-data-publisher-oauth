@@ -1,7 +1,7 @@
 # This workflow will build the project on pull requests with tests
 # Uses:
 #   OS: ubuntu-lates
-#   JDK: Adopt JDK 8
+#   JDK: Temurin JDK 21
 
 name: PR Builder
 
@@ -26,7 +26,7 @@ jobs:
           distribution: "temurin"
       - name: Cache local Maven repository
         id: cache-maven-m2
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         env:
           cache-name: cache-m2
         with:
