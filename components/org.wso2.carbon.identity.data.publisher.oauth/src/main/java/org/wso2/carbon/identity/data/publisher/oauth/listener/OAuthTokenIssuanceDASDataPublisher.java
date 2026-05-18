@@ -191,22 +191,7 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
 
     public void publishTokenIssueEvent(TokenData tokenData) {
 
-        Object[] payloadData = new Object[15];
-        payloadData[0] = tokenData.getUser();
-        payloadData[1] = tokenData.getTenantDomain();
-        payloadData[2] = tokenData.getUserStoreDomain();
-        payloadData[3] = tokenData.getClientId();
-        payloadData[4] = tokenData.getGrantType();
-        payloadData[5] = tokenData.getTokenId();
-        payloadData[6] = tokenData.getAuthzScopes();
-        payloadData[7] = tokenData.getUnAuthzScopes();
-        payloadData[8] = tokenData.isSuccess();
-        payloadData[9] = tokenData.getErrorCode();
-        payloadData[10] = tokenData.getErrorMsg();
-        payloadData[11] = tokenData.getAccessTokenValidityMillis();
-        payloadData[12] = tokenData.getRefreshTokenValidityMillis();
-        payloadData[13] = tokenData.getIssuedTime();
-        payloadData[14] = tokenData.getRemoteIp();
+        Object[] payloadData = OAuthDataPublisherUtils.buildTokenIssuancePayload(tokenData);
 
         String[] publishingDomains = (String[]) tokenData.getParameter(OAuthDataPublisherConstants.TENANT_ID);
         if (publishingDomains != null && publishingDomains.length > 0) {

@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.oltu.oauth2.common.utils.OAuthUtils;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.data.publisher.oauth.model.TokenData;
 import org.wso2.carbon.identity.oauth.OAuthUtil;
 import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
 import org.wso2.carbon.identity.oauth.dao.OAuthAppDAO;
@@ -78,4 +79,52 @@ public class OAuthDataPublisherUtils {
         return OAuthTokenPersistenceFactory.getInstance().getAccessTokenDAO().getAccessToken(token, true);
     }
 
+    /**
+     * Build the 15-element payload array for a token issuance event from the given {@link TokenData}.
+     * Both the DAS token issuance publisher and the Moesif token issuance publisher use this method
+     * so they always emit the same payload structure.
+     *
+     * <p>Payload order:
+     * <ol>
+     *   <li>username</li>
+     *   <li>tenantDomain</li>
+     *   <li>userStoreDomain</li>
+     *   <li>clientId</li>
+     *   <li>grantType</li>
+     *   <li>tokenId</li>
+     *   <li>authzScopes</li>
+     *   <li>unAuthzScopes</li>
+     *   <li>isSuccess (boolean)</li>
+     *   <li>errorCode</li>
+     *   <li>errorMsg</li>
+     *   <li>accessTokenValidityMillis (long)</li>
+     *   <li>refreshTokenValidityMillis (long)</li>
+     *   <li>issuedTime (long)</li>
+     *   <li>remoteIp</li>
+     * </ol>
+     * </p>
+     *
+     * @param tokenData The token data object populated from the OAuth interceptor callbacks.
+     * @return A 15-element {@code Object[]} ready to be attached to a databridge event.
+     */
+    public static Object[] buildTokenIssuancePayload(TokenData tokenData) {
+
+        Object[] payloadData = new Object[15];
+        payloadData[0] = tokenData.getUser();
+        payloadData[1] = tokenData.getTenantDomain();
+        payloadData[2] = tokenData.getUserStoreDomain();
+        payloadData[3] = tokenData.getClientId();
+        payloadData[4] = tokenData.getGrantType();
+        payloadData[5] = tokenData.getTokenId();
+        payloadData[6] = tokenData.getAuthzScopes();
+        payloadData[7] = tokenData.getUnAuthzScopes();
+        payloadData[8] = tokenData.isSuccess();
+        payloadData[9] = tokenData.getErrorCode();
+        payloadData[10] = tokenData.getErrorMsg();
+        payloadData[11] = tokenData.getAccessTokenValidityMillis();
+        payloadData[12] = tokenData.getRefreshTokenValidityMillis();
+        payloadData[13] = tokenData.getIssuedTime();
+        payloadData[14] = tokenData.getRemoteIp();
+        return payloadData;
+    }
 }
