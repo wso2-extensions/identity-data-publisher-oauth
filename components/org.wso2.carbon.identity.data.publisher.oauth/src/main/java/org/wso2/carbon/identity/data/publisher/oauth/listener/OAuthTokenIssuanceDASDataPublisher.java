@@ -83,6 +83,27 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
 
         tokenData.setGrantType(tokenReqDTO.getGrantType());
         tokenData.setClientId(tokenReqDTO.getClientId());
+
+        // In a case if the authenticated user is not preset, publish event to sp tenant domain
+        if (publishingTenantDomains == null) {
+            publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(tokenReqDTO.getTenantDomain(), null);
+        }
+
+        HttpServletRequestWrapper tokenReq = tokenReqDTO.getHttpServletRequestWrapper();
+        if (tokenReq != null) {
+            tokenData.setRemoteIp(tokenReq.getRemoteAddr());
+        }
+
+        // Token response is null if token issuance failed. Any exception thrown here would mask the original error.
+        if (tokenRespDTO == null) {
+            tokenData.setIsSuccess(false);
+            tokenData.setErrorCode(OAuth2ErrorCodes.SERVER_ERROR);
+            tokenData.setErrorMsg("Error occurred when issuing token");
+            tokenData.addParameter(OAuthDataPublisherConstants.TENANT_ID, publishingTenantDomains);
+            this.publishTokenIssueEvent(tokenData);
+            return;
+        }
+
         tokenData.setTokenId(tokenRespDTO.getTokenId());
         StringBuilder unauthzScopes = new StringBuilder();
         List<String> requestedScopes = new LinkedList(Arrays.asList(tokenReqDTO.getScope()));
@@ -97,17 +118,9 @@ public class OAuthTokenIssuanceDASDataPublisher extends AbstractOAuthEventInterc
             unauthzScopes.append(scope).append(" ");
         }
 
-        // In a case if the authenticated user is not preset, publish event to sp tenant domain
-        if (publishingTenantDomains == null) {
-            publishingTenantDomains = OAuthDataPublisherUtils.getTenantDomains(tokenReqDTO.getTenantDomain(), null);
-        }
         tokenData.setAuthzScopes(tokenRespDTO.getAuthorizedScopes());
         tokenData.setUnAuthzScopes(unauthzScopes.toString());
         tokenData.setAccessTokenValidityMillis(tokenRespDTO.getExpiresInMillis());
-        HttpServletRequestWrapper tokenReq = tokenReqDTO.getHttpServletRequestWrapper();
-        if (tokenReq != null) {
-            tokenData.setRemoteIp(tokenReq.getRemoteAddr());
-        }
 
         // In an error scenario, publish error info to the tokenData.
         if (tokenRespDTO.isError()) {
